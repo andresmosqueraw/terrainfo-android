@@ -9,8 +9,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class LoginViewModel : ViewModel() {
-
-    // Estado inmutable expuesto a la UI
     var uiState by mutableStateOf(LoginUiState())
         private set
 
@@ -26,25 +24,22 @@ class LoginViewModel : ViewModel() {
         uiState = uiState.copy(password = newPassword)
     }
 
-    fun onLoginClicked() {
-        // Validaciones básicas
+    fun onLoginClicked(onLoginSuccess: () -> Unit) {
+        // Validación básica
         if (uiState.email.isBlank() || uiState.password.isBlank()) {
             uiState = uiState.copy(errorMessage = "Campos vacíos", isLoading = false)
             return
         }
 
-        // Simular una llamada de red o autenticación
         viewModelScope.launch {
             uiState = uiState.copy(isLoading = true, errorMessage = null)
-            delay(2000) // simula retraso de 2 segundos
+            delay(2000) // Simula una llamada de red
 
-            // Ejemplo: Si email y password coinciden con un "dummy" (test)
             if (uiState.email == "user@example.com" && uiState.password == "1234") {
                 // Login exitoso
                 uiState = uiState.copy(isLoading = false, errorMessage = null)
-                // Navegar a otra pantalla o hacer algo...
+                onLoginSuccess() // Invoca la navegación al mapa
             } else {
-                // Error de credenciales
                 uiState = uiState.copy(
                     isLoading = false,
                     errorMessage = "Credenciales incorrectas"

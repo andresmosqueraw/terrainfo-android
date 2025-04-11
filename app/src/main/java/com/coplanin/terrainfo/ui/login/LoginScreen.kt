@@ -9,11 +9,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -63,10 +59,9 @@ fun LoginScreen(
     ) {
         // Fondo con imagen
         Image(
-            painter = painterResource(id = R.drawable.backgroun_login), // tu imagen de fondo aquí
+            painter = painterResource(id = R.drawable.background_login),
             contentDescription = "Card Background",
-            modifier = Modifier
-                .fillMaxSize(),
+            modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
         )
         Card(
@@ -89,7 +84,6 @@ fun LoginScreen(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Título alineado a la izquierda
                 Text(
                     text = "Inicio de sesión",
                     style = MaterialTheme.typography.titleLarge,
@@ -114,7 +108,9 @@ fun LoginScreen(
                         onValueChange = {},
                         readOnly = true,
                         label = { Text("Municipio", color = Color.White) },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                        trailingIcon = {
+                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                        },
                         textStyle = MaterialTheme.typography.bodyLarge.copy(color = Color.White),
                         colors = TextFieldDefaults.outlinedTextFieldColors(
                             focusedBorderColor = Color.White,
@@ -144,7 +140,7 @@ fun LoginScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // USUARIO con ícono
+                // USUARIO
                 OutlinedTextField(
                     value = uiState.email,
                     onValueChange = { loginViewModel.onEmailChange(it) },
@@ -166,7 +162,7 @@ fun LoginScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // CLAVE con ícono
+                // CLAVE
                 OutlinedTextField(
                     value = uiState.password,
                     onValueChange = { loginViewModel.onPasswordChange(it) },
@@ -190,7 +186,7 @@ fun LoginScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Button(
-                    onClick = { loginViewModel.onLoginClicked() },
+                    onClick = { loginViewModel.onLoginClicked(onLoginSuccess) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(50.dp),

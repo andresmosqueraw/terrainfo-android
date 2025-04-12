@@ -5,10 +5,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.delay
+import com.coplanin.terrainfo.data.repository.AuthRepository
 import kotlinx.coroutines.launch
 
-class LoginViewModel : ViewModel() {
+class LoginViewModel(
+    private val repository: AuthRepository = AuthRepository() // Inyecta aquí si usas DI
+) : ViewModel() {
+
     var uiState by mutableStateOf(LoginUiState())
         private set
 
@@ -26,23 +29,38 @@ class LoginViewModel : ViewModel() {
 
     fun onLoginClicked(onLoginSuccess: () -> Unit) {
         // Validación básica
-        if (uiState.email.isBlank() || uiState.password.isBlank()) {
-            uiState = uiState.copy(errorMessage = "Campos vacíos", isLoading = false)
+        if (uiState.email.isBlank() || uiState.password.isBlank() || uiState.municipio.isBlank()) {
+            uiState = uiState.copy(
+                errorMessage = "Campos vacíos",
+                isLoading = false
+            )
             return
         }
 
         viewModelScope.launch {
             uiState = uiState.copy(isLoading = true, errorMessage = null)
-            delay(2000) // Simula una llamada de red
 
-            if (uiState.email == "user@example.com" && uiState.password == "1234") {
+            try {
+                // Llamada real al servicio de login
+                val response = repository.login(
+                    username = uiState.email,
+                    password = uiState.password,
+                    municipio = uiState.municipio
+                )
+
+                // Si la llamada fue exitosa, aquí tienes el token y el user
+                // val token = response.token
+                // val user = response.user
+
                 // Login exitoso
                 uiState = uiState.copy(isLoading = false, errorMessage = null)
-                onLoginSuccess() // Invoca la navegación al mapa
-            } else {
+                onLoginSuccess()
+
+            } catch (e: Exception) {
+                // Maneja el error que ocurra (timeout, credenciales inválidas, etc.)
                 uiState = uiState.copy(
                     isLoading = false,
-                    errorMessage = "Credenciales incorrectas"
+                    errorMessage = e.message ?: "Error de red"
                 )
             }
         }

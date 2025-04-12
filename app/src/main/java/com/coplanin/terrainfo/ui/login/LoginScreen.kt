@@ -186,7 +186,9 @@ fun LoginScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Button(
-                    onClick = { loginViewModel.onLoginClicked(onLoginSuccess) },
+                    onClick = {
+                        loginViewModel.onLoginClicked(onLoginSuccess)
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(50.dp),

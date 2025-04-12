@@ -6,7 +6,9 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.coplanin.terrainfo.data.repository.AuthRepository
+import com.google.gson.GsonBuilder
 import kotlinx.coroutines.launch
+import retrofit2.HttpException
 
 class LoginViewModel(
     private val repository: AuthRepository = AuthRepository() // Inyecta aquí si usas DI
@@ -56,8 +58,28 @@ class LoginViewModel(
                 uiState = uiState.copy(isLoading = false, errorMessage = null)
                 onLoginSuccess()
 
+            } catch (e: HttpException) {
+                // 1. obtener el cuerpo de la respuesta de error
+                val errorBody = e.response()?.errorBody()?.string()
+
+                // 2. parsear ese errorBody con Gson (u otra librería) si es JSON
+                val gson = GsonBuilder().create()
+                val errorResponse = try {
+                    gson.fromJson(errorBody, ErrorResponse::class.java)
+                } catch (ex: Exception) {
+                    null
+                }
+
+                // 3. tomar el mensaje del campo "error" (si existe) o fallback a e.message
+                val messageFromServer = errorResponse?.error ?: e.message()
+
+                // 4. actualizar el estado para mostrarlo en el AlertDialog
+                uiState = uiState.copy(
+                    isLoading = false,
+                    errorMessage = messageFromServer
+                )
             } catch (e: Exception) {
-                // Maneja el error que ocurra (timeout, credenciales inválidas, etc.)
+                // Maneja otros errores (IOException, etc.)
                 uiState = uiState.copy(
                     isLoading = false,
                     errorMessage = e.message ?: "Error de red"
@@ -70,3 +92,5 @@ class LoginViewModel(
         uiState = uiState.copy(errorMessage = null)
     }
 }
+
+data class ErrorResponse(val error: String?)

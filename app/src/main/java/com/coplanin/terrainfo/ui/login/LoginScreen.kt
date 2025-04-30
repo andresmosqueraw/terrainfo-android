@@ -21,15 +21,29 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import android.Manifest
+import androidx.compose.ui.platform.LocalContext
 import com.coplanin.terrainfo.R
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
+import com.google.android.gms.location.LocationServices
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class,
+    ExperimentalPermissionsApi::class
+)
 @Composable
 fun LoginScreen(
-    loginViewModel: LoginViewModel = viewModel(),
+    loginViewModel: LoginViewModel,      // ❶ sin valor por defecto
     onLoginSuccess: () -> Unit = {}
 ) {
+    val context = LocalContext.current
+    val fusedClient = remember {
+        LocationServices.getFusedLocationProviderClient(context)
+    }
+
+    val locationPermission = rememberPermissionState(Manifest.permission.ACCESS_FINE_LOCATION)
+
     val uiState = loginViewModel.uiState
     val municipios = listOf("CUITIVA", "IZA", "TRINIDAD")
     var expanded by remember { mutableStateOf(false) }
@@ -187,7 +201,15 @@ fun LoginScreen(
 
                 Button(
                     onClick = {
-                        loginViewModel.onLoginClicked(onLoginSuccess)
+                        if (locationPermission.status.isGranted) {
+                            fusedClient.lastLocation.addOnSuccessListener { location ->
+                                loginViewModel.onLoginClicked(onLoginSuccess, location)
+                            }.addOnFailureListener {
+                                loginViewModel.onLoginClicked(onLoginSuccess, null)
+                            }
+                        } else {
+                            locationPermission.launchPermissionRequest()
+                        }
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -209,7 +231,24 @@ fun LoginScreen(
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun LoginScreenPreview() {
-    MaterialTheme {
+    /* MaterialTheme {
         LoginScreen()
+    }*/
+}
+
+@OptIn(ExperimentalPermissionsApi::class)
+@Composable
+fun EnsureLocationPermission(onGranted: (Boolean) -> Unit) {
+    val permState = rememberPermissionState(
+        Manifest.permission.ACCESS_FINE_LOCATION
+    )
+    LaunchedEffect(Unit) {
+        // si ya está concedido -> callback inmediato
+        if (permState.status.isGranted) onGranted(true)
+        else permState.launchPermissionRequest()
+    }
+    // escucha cambios
+    LaunchedEffect(permState.status) {
+        onGranted(permState.status.isGranted)
     }
 }

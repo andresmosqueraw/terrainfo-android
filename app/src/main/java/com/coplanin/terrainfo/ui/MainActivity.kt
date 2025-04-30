@@ -12,7 +12,10 @@ import com.coplanin.terrainfo.ui.login.LoginViewModel
 import com.coplanin.terrainfo.ui.maps.MapScreen
 import com.coplanin.terrainfo.ui.theme.TerrainfoTheme
 import androidx.lifecycle.viewmodel.compose.viewModel
+import dagger.hilt.android.AndroidEntryPoint
+import androidx.hilt.navigation.compose.hiltViewModel
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -22,13 +25,10 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 NavHost(navController = navController, startDestination = "login") {
                     composable("login") {
-                        // Inyectamos (o creamos localmente) el ViewModel
-                        val loginViewModel = viewModel<LoginViewModel>()
+                        val loginViewModel: LoginViewModel = hiltViewModel()
                         LoginScreen(
                             loginViewModel = loginViewModel,
-                            onLoginSuccess = {
-                                navController.navigate("map")
-                            }
+                            onLoginSuccess = { navController.navigate("map") }
                         )
                     }
                     composable("map") {

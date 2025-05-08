@@ -25,8 +25,8 @@ class CommonDataRepository @Inject constructor(
                 createDate = dto.createDate,
                 createUserName = dto.createUserName,
                 eventDate = dto.eventDate,
-                eventX = dto.eventX.toString(),
-                eventY = dto.eventY.toString()
+                eventX = dto.eventX,
+                eventY = dto.eventY
             )
         })
     }

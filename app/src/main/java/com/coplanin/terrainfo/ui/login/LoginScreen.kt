@@ -126,7 +126,7 @@ fun LoginScreen(
                             ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
                         },
                         textStyle = MaterialTheme.typography.bodyLarge.copy(color = Color.White),
-                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                        colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = Color.White,
                             unfocusedBorderColor = Color.White,
                             cursorColor = Color.White,
@@ -165,7 +165,7 @@ fun LoginScreen(
                     },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
                     textStyle = MaterialTheme.typography.bodyLarge.copy(color = Color.White),
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                    colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = Color.White,
                         unfocusedBorderColor = Color.White,
                         cursorColor = Color.White,
@@ -188,7 +188,7 @@ fun LoginScreen(
                     visualTransformation = PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     textStyle = MaterialTheme.typography.bodyLarge.copy(color = Color.White),
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                    colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = Color.White,
                         unfocusedBorderColor = Color.White,
                         cursorColor = Color.White,

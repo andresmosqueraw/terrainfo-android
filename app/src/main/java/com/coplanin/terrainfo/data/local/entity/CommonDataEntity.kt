@@ -18,6 +18,6 @@ data class CommonDataEntity(
     val createDate: String,
     val createUserName: String,
     val eventDate: String,
-    val eventX: String,
-    val eventY: String
+    val eventX: Double,
+    val eventY: Double
 )

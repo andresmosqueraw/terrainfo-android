@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.coplanin.terrainfo.data.local.entity.CommonDataEntity
+import com.coplanin.terrainfo.data.local.entity.PointEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -14,4 +15,12 @@ interface CommonDataDao {
 
     @Query("SELECT * FROM commondata")
     fun observeAll(): Flow<List<CommonDataEntity>>
+
+    @Query("""
+        SELECT id, activityName, eventX, eventY 
+        FROM commondata
+        WHERE eventX IS NOT NULL AND eventY IS NOT NULL
+    """)
+        fun observePoints(): Flow<List<PointEntity>>
+
 }

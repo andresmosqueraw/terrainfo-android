@@ -9,9 +9,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.coplanin.terrainfo.ui.login.LoginScreen
 import com.coplanin.terrainfo.ui.login.LoginViewModel
-import com.coplanin.terrainfo.ui.maps.MapScreen
+import com.coplanin.terrainfo.ui.map.MapScreen
 import com.coplanin.terrainfo.ui.theme.TerrainfoTheme
-import androidx.lifecycle.viewmodel.compose.viewModel
 import dagger.hilt.android.AndroidEntryPoint
 import androidx.hilt.navigation.compose.hiltViewModel
 

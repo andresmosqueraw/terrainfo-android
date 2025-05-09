@@ -191,3 +191,45 @@ public val EyeSlash: ImageVector
 
 private var _eye_slash: ImageVector? = null
 
+
+
+public val ArrowBack: ImageVector
+    get() {
+        if (_arrow_back != null) {
+            return _arrow_back!!
+        }
+        _arrow_back = ImageVector.Builder(
+            name = "Arrow_back",
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
+            viewportWidth = 960f,
+            viewportHeight = 960f
+        ).apply {
+            path(
+                fill = SolidColor(Color.Black),
+                fillAlpha = 1.0f,
+                stroke = null,
+                strokeAlpha = 1.0f,
+                strokeLineWidth = 1.0f,
+                strokeLineCap = StrokeCap.Butt,
+                strokeLineJoin = StrokeJoin.Miter,
+                strokeLineMiter = 1.0f,
+                pathFillType = PathFillType.NonZero
+            ) {
+                moveTo(313f, 520f)
+                lineToRelative(224f, 224f)
+                lineToRelative(-57f, 56f)
+                lineToRelative(-320f, -320f)
+                lineToRelative(320f, -320f)
+                lineToRelative(57f, 56f)
+                lineToRelative(-224f, 224f)
+                horizontalLineToRelative(487f)
+                verticalLineToRelative(80f)
+                close()
+            }
+        }.build()
+        return _arrow_back!!
+    }
+
+private var _arrow_back: ImageVector? = null
+

@@ -3,6 +3,7 @@ package com.coplanin.terrainfo.ui.map
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.coplanin.terrainfo.data.local.dao.CommonDataDao
+import com.coplanin.terrainfo.data.local.entity.CommonDataEntity
 import com.google.android.gms.maps.model.LatLng
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
@@ -35,14 +36,11 @@ class MapViewModel @Inject constructor(
                 initialValue = emptyList()
             )
 
-    /*--- NEW:  items for the bottom sheet ---*/
-    val visits: StateFlow<List<VisitItem>> =
-        dao.observeAll()                  // no extra query needed
-            .map { list ->
-                list.map { VisitItem(it.idSearch, it.address) }
-            }
+    /** Elementos completos para la hoja inferior  */
+    val visits: StateFlow<List<CommonDataEntity>> =
+        dao.observeAll()
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 }
 
 data class MapPoint(val id: Int, val title: String, val latLng: LatLng)
-data class VisitItem(val idSearch: String, val address: String)
+// data class VisitItem(val idSearch: String, val address: String)

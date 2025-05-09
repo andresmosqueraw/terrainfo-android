@@ -1,5 +1,6 @@
 package com.coplanin.terrainfo.ui.map
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -54,6 +55,7 @@ fun MapScreen(
         sheetShape = RoundedCornerShape(24.dp),
         sheetTonalElevation = 12.dp,
         sheetShadowElevation = 12.dp,
+        sheetContainerColor = Color.White,
         sheetContent = {
             Column(
                 modifier = Modifier
@@ -65,13 +67,45 @@ fun MapScreen(
                     style = MaterialTheme.typography.titleLarge,
                 )
                 HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
-                LazyColumn {
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
                     items(visits) { v ->
-                        Text(
-                            text = "${v.idSearch} — ${v.address}",
-                            style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.padding(vertical = 4.dp)
-                        )
+                        Card(
+                            shape = RoundedCornerShape(12.dp),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 4.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color.White)
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .padding(16.dp)
+                                    .fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = SearchIcon,
+                                    contentDescription = "Buscar",
+                                    tint = Color(0xFF388E3C),
+                                    modifier = Modifier.size(24.dp)
+                                )
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Column {
+                                    Text(
+                                        text = v.idSearch,
+                                        style = MaterialTheme.typography.titleLarge
+                                    )
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Text(
+                                        text = v.address,
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        color = Color.Gray
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
             }

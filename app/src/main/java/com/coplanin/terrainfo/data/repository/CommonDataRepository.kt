@@ -15,6 +15,7 @@ class CommonDataRepository @Inject constructor(
                 id = dto.id,
                 activityName = dto.activityName,
                 activityCode = dto.activityCode,
+                idSearch = dto.idSearch,
                 address = dto.address,
                 cityCode = dto.cityCode,
                 cityDesc = dto.cityDesc,

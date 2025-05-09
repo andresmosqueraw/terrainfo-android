@@ -34,6 +34,7 @@ data class CommonDataDTO(
     @SerializedName("id") val id: Int,
     @SerializedName("activity_name") val activityName: String,
     @SerializedName("activity_code") val activityCode: String,
+    @SerializedName("id_search") val idSearch: String,
     @SerializedName("address") val address: String,
     @SerializedName("city_code") val cityCode: String,
     @SerializedName("city_desc") val cityDesc: String,

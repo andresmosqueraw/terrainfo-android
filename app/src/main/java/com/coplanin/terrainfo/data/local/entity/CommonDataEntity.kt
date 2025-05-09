@@ -8,6 +8,7 @@ data class CommonDataEntity(
     @PrimaryKey val id: Int,
     val activityName: String,
     val activityCode: String,
+    val idSearch: String,
     val address: String,
     val cityCode: String,
     val cityDesc: String,

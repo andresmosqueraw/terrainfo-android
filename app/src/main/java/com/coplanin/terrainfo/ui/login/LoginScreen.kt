@@ -5,9 +5,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Done
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -24,6 +21,8 @@ import androidx.compose.ui.unit.sp
 import android.Manifest
 import androidx.compose.ui.platform.LocalContext
 import com.coplanin.terrainfo.R
+import com.coplanin.terrainfo.ui.icons.EyeSlash
+import com.coplanin.terrainfo.ui.icons.Person
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
@@ -161,7 +160,7 @@ fun LoginScreen(
                     label = { Text("Usuario", color = Color.White) },
                     singleLine = true,
                     trailingIcon = {
-                        Icon(imageVector = Icons.Default.Person, contentDescription = "Usuario", tint = Color.White)
+                        Icon(imageVector = Person, contentDescription = "Usuario", tint = Color.White)
                     },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
                     textStyle = MaterialTheme.typography.bodyLarge.copy(color = Color.White),
@@ -183,7 +182,7 @@ fun LoginScreen(
                     label = { Text("Clave", color = Color.White) },
                     singleLine = true,
                     trailingIcon = {
-                        Icon(imageVector = Icons.Default.Done, contentDescription = "Mostrar clave", tint = Color.White)
+                        Icon(imageVector = EyeSlash, contentDescription = "Mostrar clave", tint = Color.White)
                     },
                     visualTransformation = PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),

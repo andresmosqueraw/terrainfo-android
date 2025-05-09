@@ -1,19 +1,18 @@
 package com.coplanin.terrainfo.ui.map
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.coplanin.terrainfo.R
+import com.coplanin.terrainfo.ui.icons.SearchIcon
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
@@ -29,15 +28,16 @@ fun MapScreen(
     viewModel: MapViewModel = hiltViewModel()
 ) {
     val points by viewModel.points.collectAsState()
+    val visits by viewModel.visits.collectAsState()
+
+    val scaffoldState = rememberBottomSheetScaffoldState()
 
     val bogota = LatLng(4.7110, -74.0721)
     val cameraPositionState = rememberCameraPositionState {
-        /* Bogotá por defecto mientras carga la BD */
         position = CameraPosition.fromLatLngZoom(bogota, 12f)
     }
     var searchText by remember { mutableStateOf("") }
 
-    /* Cuando cambie la lista, anima la cámara al primer punto */
     LaunchedEffect(points) {
         if (points.isNotEmpty()) {
             cameraPositionState.animate(
@@ -47,106 +47,90 @@ fun MapScreen(
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        GoogleMap(
-            modifier = Modifier.fillMaxSize(),
-            cameraPositionState = cameraPositionState
-        ) {
-            points.forEach { p ->
-                Marker(
-                    state = MarkerState(position = p.latLng),
-                    title = p.title
+    BottomSheetScaffold(
+        modifier = modifier.fillMaxSize(),
+        scaffoldState = scaffoldState,
+        sheetPeekHeight = 120.dp,
+        sheetShape = RoundedCornerShape(24.dp),
+        sheetTonalElevation = 12.dp,
+        sheetShadowElevation = 12.dp,
+        sheetContent = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth().height(800.dp)
+                    .padding(horizontal = 16.dp)
+            ) {
+                Text(
+                    text = "Puntos a visitar",
+                    style = MaterialTheme.typography.titleLarge,
                 )
+                HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
+                LazyColumn {
+                    items(visits) { v ->
+                        Text(
+                            text = "${v.idSearch} — ${v.address}",
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(vertical = 4.dp)
+                        )
+                    }
+                }
             }
         }
-
-        // Search bar UI
-        Surface(
-            modifier = Modifier
-                .padding(16.dp, 48.dp, 16.dp, 0.dp)
-                .fillMaxWidth()
-                .align(Alignment.TopCenter),
-            shape = RoundedCornerShape(50),
-            shadowElevation = 8.dp,
-            tonalElevation = 8.dp,
-            color = Color.White
-        ) {
-            OutlinedTextField(
-                value = searchText,
-                onValueChange = { searchText = it },
-                placeholder = { Text("Buscar aquí") },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = "Buscar"
-                    )
-                },
-                singleLine = true,
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color.Transparent,
-                    unfocusedBorderColor = Color.Transparent,
-                    disabledBorderColor = Color.Transparent,
-                    errorBorderColor = Color.Transparent,
-                    focusedContainerColor = Color.Transparent,
-                    unfocusedContainerColor = Color.Transparent,
-                    disabledContainerColor = Color.Transparent,
-                    errorContainerColor = Color.Transparent,
-                ),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp)
-            )
-        }
-    }
-}
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun MapScreenPreview() {
-    Box(modifier = Modifier.fillMaxSize()) {
-        // Mapa simulado (placeholder en preview)
+    ) { innerPadding ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0xFFE0E0E0)) // Gris claro simulando fondo de mapa
-        )
-
-        // Search bar UI (igual al original)
-        Surface(
-            modifier = Modifier
-                .padding(16.dp, 48.dp, 16.dp, 0.dp)
-                .fillMaxWidth()
-                .align(Alignment.TopCenter),
-            shape = RoundedCornerShape(50),
-            shadowElevation = 8.dp,
-            tonalElevation = 8.dp,
-            color = Color.White
+                .padding(innerPadding)
         ) {
-            OutlinedTextField(
-                value = "",
-                onValueChange = {},
-                placeholder = { Text("Buscar aquí") },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = "Buscar"
+            GoogleMap(
+                modifier = Modifier.fillMaxSize(),
+                cameraPositionState = cameraPositionState
+            ) {
+                points.forEach { p ->
+                    Marker(
+                        state = MarkerState(position = p.latLng),
+                        title = p.title
                     )
-                },
-                singleLine = true,
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color.Transparent,
-                    unfocusedBorderColor = Color.Transparent,
-                    disabledBorderColor = Color.Transparent,
-                    errorBorderColor = Color.Transparent,
-                    focusedContainerColor = Color.Transparent,
-                    unfocusedContainerColor = Color.Transparent,
-                    disabledContainerColor = Color.Transparent,
-                    errorContainerColor = Color.Transparent,
-                ),
+                }
+            }
+
+            // Barra de búsqueda flotante
+            Surface(
                 modifier = Modifier
+                    .padding(start = 16.dp, end = 16.dp, top = 48.dp)
                     .fillMaxWidth()
-                    .padding(horizontal = 8.dp)
-            )
+                    .align(Alignment.TopCenter),
+                shape = RoundedCornerShape(50),
+                shadowElevation = 8.dp,
+                tonalElevation = 8.dp,
+                color = Color.White
+            ) {
+                OutlinedTextField(
+                    value = searchText,
+                    onValueChange = { searchText = it },
+                    placeholder = { Text("Buscar aquí") },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = SearchIcon,
+                            contentDescription = "Buscar"
+                        )
+                    },
+                    singleLine = true,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Color.Transparent,
+                        unfocusedBorderColor = Color.Transparent,
+                        disabledBorderColor = Color.Transparent,
+                        errorBorderColor = Color.Transparent,
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent,
+                        disabledContainerColor = Color.Transparent,
+                        errorContainerColor = Color.Transparent,
+                    ),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp)
+                )
+            }
         }
     }
 }

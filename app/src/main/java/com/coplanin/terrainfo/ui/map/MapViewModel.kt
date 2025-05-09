@@ -34,6 +34,15 @@ class MapViewModel @Inject constructor(
                 started = SharingStarted.WhileSubscribed(5_000),
                 initialValue = emptyList()
             )
+
+    /*--- NEW:  items for the bottom sheet ---*/
+    val visits: StateFlow<List<VisitItem>> =
+        dao.observeAll()                  // no extra query needed
+            .map { list ->
+                list.map { VisitItem(it.idSearch, it.address) }
+            }
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 }
 
 data class MapPoint(val id: Int, val title: String, val latLng: LatLng)
+data class VisitItem(val idSearch: String, val address: String)

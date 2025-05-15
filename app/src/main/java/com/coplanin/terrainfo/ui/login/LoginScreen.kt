@@ -20,7 +20,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import android.Manifest
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.VisualTransformation
 import com.coplanin.terrainfo.R
+import com.coplanin.terrainfo.ui.icons.Eye
 import com.coplanin.terrainfo.ui.icons.EyeSlash
 import com.coplanin.terrainfo.ui.icons.Person
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -174,17 +176,24 @@ fun LoginScreen(
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
+                // Estado para alternar la visibilidad de la contraseña
+                var passwordVisible by remember { mutableStateOf(false) }
 
-                // CLAVE
                 OutlinedTextField(
                     value = uiState.password,
                     onValueChange = { loginViewModel.onPasswordChange(it) },
                     label = { Text("Clave", color = Color.White) },
                     singleLine = true,
                     trailingIcon = {
-                        Icon(imageVector = EyeSlash, contentDescription = "Mostrar clave", tint = Color.White)
+                        IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                            Icon(
+                                imageVector = if (passwordVisible) Eye else EyeSlash,
+                                contentDescription = if (passwordVisible) "Ocultar clave" else "Mostrar clave",
+                                tint = Color.White
+                            )
+                        }
                     },
-                    visualTransformation = PasswordVisualTransformation(),
+                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     textStyle = MaterialTheme.typography.bodyLarge.copy(color = Color.White),
                     colors = OutlinedTextFieldDefaults.colors(

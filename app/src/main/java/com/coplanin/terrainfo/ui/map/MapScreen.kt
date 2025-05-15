@@ -15,6 +15,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.coplanin.terrainfo.data.local.entity.CommonDataEntity
 import com.coplanin.terrainfo.ui.icons.ArrowBack
 import com.coplanin.terrainfo.ui.icons.SearchIcon
+import com.coplanin.terrainfo.ui.icons.User
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
@@ -207,6 +208,13 @@ fun MapScreen(
                         Icon(
                             imageVector = SearchIcon,
                             contentDescription = "Buscar"
+                        )
+                    },
+                    trailingIcon = {
+                        Icon(
+                            imageVector = User, // Cambia este ícono según lo que necesites
+                            contentDescription = "Account",
+                            modifier = Modifier.size(24.dp)
                         )
                     },
                     singleLine = true,

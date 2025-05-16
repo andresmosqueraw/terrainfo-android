@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.coplanin.terrainfo.data.local.entity.CommonDataEntity
 import com.coplanin.terrainfo.ui.icons.ArrowBack
 import com.coplanin.terrainfo.ui.icons.SearchIcon
@@ -27,6 +28,7 @@ import com.google.maps.android.compose.rememberCameraPositionState
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MapScreen(
+    navController: NavController,
     modifier: Modifier = Modifier,
     viewModel: MapViewModel = hiltViewModel()
 ) {
@@ -211,11 +213,13 @@ fun MapScreen(
                         )
                     },
                     trailingIcon = {
-                        Icon(
-                            imageVector = User, // Cambia este ícono según lo que necesites
-                            contentDescription = "Account",
-                            modifier = Modifier.size(24.dp)
-                        )
+                        IconButton(onClick = { navController.navigate("profile") }) {
+                            Icon(
+                                imageVector = User,
+                                contentDescription = "Account",
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
                     },
                     singleLine = true,
                     colors = OutlinedTextFieldDefaults.colors(

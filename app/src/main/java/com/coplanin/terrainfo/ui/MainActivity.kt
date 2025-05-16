@@ -15,6 +15,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import androidx.hilt.navigation.compose.hiltViewModel
 import android.content.Context
 import android.content.SharedPreferences
+import com.coplanin.terrainfo.ui.profile.ProfileScreen
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -44,7 +45,10 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                     composable("map") {
-                        MapScreen()
+                        MapScreen(navController = navController)          // ⬅️ pasamos el navController
+                    }
+                    composable("profile") {                               // ⬅️ nueva ruta
+                        ProfileScreen(navController = navController)
                     }
                 }
             }

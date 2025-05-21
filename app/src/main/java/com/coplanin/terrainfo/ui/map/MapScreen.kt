@@ -1,5 +1,6 @@
 package com.coplanin.terrainfo.ui.map
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -89,7 +90,7 @@ fun MapScreen(
                         text = "Puntos a visitar",
                         style = MaterialTheme.typography.titleLarge,
                     )
-                    HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
 
                     LazyColumn(
                         modifier = Modifier
@@ -98,10 +99,6 @@ fun MapScreen(
                             .padding(horizontal = 16.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        // Encabezado
-                        item {
-                            HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
-                        }
 
                         // Lista de elementos
                         items(visits) { v ->
@@ -116,28 +113,43 @@ fun MapScreen(
                             ) {
                                 Row(
                                     modifier = Modifier
-                                        .padding(16.dp)
-                                        .fillMaxWidth(),
-                                    verticalAlignment = Alignment.CenterVertically
+                                        .fillMaxWidth()
+                                        .height(IntrinsicSize.Min) // Para que el borde azul ocupe toda la altura del contenido
                                 ) {
-                                    Icon(
-                                        imageVector = SearchIcon,
-                                        contentDescription = "Buscar",
-                                        tint = Color(0xFF388E3C),
-                                        modifier = Modifier.size(24.dp)
+                                    // Borde azul izquierdo
+                                    Box(
+                                        modifier = Modifier
+                                            .width(8.dp)
+                                            .fillMaxHeight()
+                                            .background(Color(0xFF0D47A1)) // Azul oscuro (puedes ajustarlo)
                                     )
-                                    Spacer(modifier = Modifier.width(12.dp))
-                                    Column {
-                                        Text(
-                                            text = v.idSearch,
-                                            style = MaterialTheme.typography.titleLarge
+
+                                    // Contenido del card
+                                    Row(
+                                        modifier = Modifier
+                                            .padding(16.dp)
+                                            .fillMaxWidth(),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(
+                                            imageVector = SearchIcon,
+                                            contentDescription = "Buscar",
+                                            tint = Color(0xFF388E3C),
+                                            modifier = Modifier.size(24.dp)
                                         )
-                                        Spacer(modifier = Modifier.height(4.dp))
-                                        Text(
-                                            text = v.address,
-                                            style = MaterialTheme.typography.bodyLarge,
-                                            color = Color.Gray
-                                        )
+                                        Spacer(modifier = Modifier.width(12.dp))
+                                        Column {
+                                            Text(
+                                                text = v.idSearch,
+                                                style = MaterialTheme.typography.titleLarge
+                                            )
+                                            Spacer(modifier = Modifier.height(4.dp))
+                                            Text(
+                                                text = v.address,
+                                                style = MaterialTheme.typography.bodyLarge,
+                                                color = Color.Gray
+                                            )
+                                        }
                                     }
                                 }
                             }

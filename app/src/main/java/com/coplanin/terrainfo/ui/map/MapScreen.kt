@@ -4,7 +4,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -75,8 +77,9 @@ fun MapScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(800.dp)
+                        .height(400.dp)
                         .padding(horizontal = 16.dp)
+                        .verticalScroll(rememberScrollState()) // Habilitar scroll
                 ) {
                     Text(
                         text = "Puntos a visitar",
@@ -84,14 +87,26 @@ fun MapScreen(
                     )
                     HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
 
-                    LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(400.dp)
+                            .padding(horizontal = 16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        // Encabezado
+                        item {
+                            HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
+                        }
+
+                        // Lista de elementos
                         items(visits) { v ->
                             Card(
                                 shape = RoundedCornerShape(12.dp),
                                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clickable { selectedVisit = v }          // ⬅️ CLICK
+                                    .clickable { selectedVisit = v }
                                     .padding(bottom = 4.dp),
                                 colors = CardDefaults.cardColors(containerColor = Color.White)
                             ) {
@@ -130,8 +145,9 @@ fun MapScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(800.dp)
+                        .height(400.dp)
                         .padding(horizontal = 24.dp)
+                        .verticalScroll(rememberScrollState()) // Habilitar scroll
                 ) {
                     /* Botón regreso */
                     IconButton(onClick = { selectedVisit = null }) {

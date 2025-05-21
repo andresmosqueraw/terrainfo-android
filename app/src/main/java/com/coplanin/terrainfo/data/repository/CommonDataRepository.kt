@@ -22,12 +22,17 @@ class CommonDataRepository @Inject constructor(
                 captureDate = dto.captureDate,
                 captureX = dto.captureX.toString(),
                 captureY = dto.captureY.toString(),
+                captureUserName = dto.captureUserName ?: "N/A",
                 eventUserName = dto.eventUserName,
                 createDate = dto.createDate,
                 createUserName = dto.createUserName,
                 eventDate = dto.eventDate,
                 eventX = dto.eventX,
-                eventY = dto.eventY
+                eventY = dto.eventY,
+                lastEditDate = dto.lastEditDate ?: "N/A",
+                lastEditUserName = dto.lastEditUserName ?: "N/A",
+                lastEditX = dto.lastEditX ?: 0.0,
+                lastEditY = dto.lastEditY ?: 0.0
             )
         })
     }

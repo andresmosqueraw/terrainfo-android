@@ -271,7 +271,7 @@ fun MapScreen(
                             Column(modifier = Modifier.padding(16.dp)) {
                                 Text(text = "Captura", style = MaterialTheme.typography.headlineSmall)
                                 DetailRow("Fecha captura", selectedVisit!!.captureDate)
-                                // todo: captureUserName
+                                DetailRow("Capturado por", selectedVisit!!.captureUserName)
                                 DetailRow("Captura Longitud/ Latitud", "${selectedVisit!!.captureX} / ${selectedVisit!!.captureY}")
                             }
                         }
@@ -299,9 +299,9 @@ fun MapScreen(
                             )
                             Column(modifier = Modifier.padding(16.dp)) {
                                 Text(text = "Última edición", style = MaterialTheme.typography.headlineSmall)
-                                // todo: lasteditDate
-                                // todo: lasteditname
-                                // todo: lasteditx / lastedity
+                                DetailRow("Última edición Longitud/ Latitud", "${selectedVisit!!.lastEditX} / ${selectedVisit!!.lastEditY}")
+                                DetailRow("Última edición por", selectedVisit!!.lastEditUserName)
+                                DetailRow("Última edición fecha", selectedVisit!!.lastEditDate)
                             }
                         }
                     }
@@ -386,9 +386,13 @@ fun MapScreen(
 
 /* ---------- helper composable para el detalle ---------- */
 @Composable
-private fun DetailRow(label: String, value: String) {
+private fun DetailRow(label: String, value: String?) {
+    var content = value
+    if (value.isNullOrEmpty() || value == "null" || value == "N/A") {
+        content = "No disponible"
+    }
     Column(modifier = Modifier.padding(vertical = 4.dp)) {
         Text(text = label, style = MaterialTheme.typography.labelLarge, color = Color.Gray)
-        Text(text = value, style = MaterialTheme.typography.bodyLarge)
+        Text(text = content ?: "No disponible", style = MaterialTheme.typography.bodyLarge)
     }
 }

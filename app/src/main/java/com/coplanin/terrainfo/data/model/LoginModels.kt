@@ -41,6 +41,7 @@ data class CommonDataDTO(
     @SerializedName("capture_date") val captureDate: String, // Consider using a Date/Time object
     @SerializedName("capture_x") val captureX: Double,
     @SerializedName("capture_y") val captureY: Double,
+    @SerializedName("capture_user_name") val captureUserName: String?,
     @SerializedName("event_user_name") val eventUserName: String,
     @SerializedName("create_date") val createDate: String, // Consider using a Date/Time object
     @SerializedName("create_user_name") val createUserName: String,
@@ -50,5 +51,5 @@ data class CommonDataDTO(
     @SerializedName("last_edit_date") val lastEditDate: String?, // Nullable
     @SerializedName("last_edit_x") val lastEditX: Double?, // Nullable
     @SerializedName("last_edit_y") val lastEditY: Double?, // Nullable
-    @SerializedName("last_edit_name") val lastEditName: String? // Nullable
+    @SerializedName("last_edit_user_name") val lastEditUserName: String? // Nullable
 )

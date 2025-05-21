@@ -61,6 +61,10 @@ fun MapScreen(
         }
     }
 
+    LaunchedEffect(selectedVisit) {
+        scaffoldState.bottomSheetState.expand()
+    }
+
     BottomSheetScaffold(
         modifier = modifier.fillMaxSize(),
         scaffoldState = scaffoldState,
@@ -202,7 +206,12 @@ fun MapScreen(
                 points.forEach { p ->
                     Marker(
                         state = MarkerState(position = p.latLng),
-                        title = p.title
+                        title = p.title,
+                        onClick = {
+                            // Buscar el punto correspondiente en la lista de visitas
+                            selectedVisit = visits.find { it.id == p.id }
+                            true // Indica que el evento fue manejado
+                        }
                     )
                 }
             }

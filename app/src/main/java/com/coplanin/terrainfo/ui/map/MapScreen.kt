@@ -189,32 +189,124 @@ fun MapScreen(
                         .padding(horizontal = 24.dp)
                         .verticalScroll(rememberScrollState()) // Habilitar scroll
                 ) {
-                    Text(
-                        text = selectedVisit!!.idSearch,
-                        style = MaterialTheme.typography.headlineSmall
-                    )
-
-                    Spacer(modifier = Modifier.height(4.dp))
-
-                    Text(
-                        text = selectedVisit!!.address,
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = Color.Gray
-                    )
+                    // Card Información básica
+                    Card(
+                        shape = RoundedCornerShape(12.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(IntrinsicSize.Min) // Asegura que el borde ocupe toda la altura
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .width(6.dp)
+                                    .fillMaxHeight()
+                                    .background(Color(0xFF0D47A1)) // Borde azul
+                            )
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                Text(text = "Información básica", style = MaterialTheme.typography.headlineSmall)
+                                DetailRow("Id Operación", selectedVisit!!.idSearch)
+                                DetailRow("Dirección", selectedVisit!!.address)
+                                DetailRow("Ciudad", "${selectedVisit!!.cityDesc} (${selectedVisit!!.cityCode})")
+                                DetailRow("Actividad", selectedVisit!!.activityName)
+                                DetailRow("Código actividad", selectedVisit!!.activityCode)
+                            }
+                        }
+                    }
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    /* Información completa (una por línea) */
-                    DetailRow("Actividad", selectedVisit!!.activityName)
-                    DetailRow("Código actividad", selectedVisit!!.activityCode)
-                    DetailRow("Ciudad", "${selectedVisit!!.cityDesc} (${selectedVisit!!.cityCode})")
-                    DetailRow("Fecha captura", selectedVisit!!.captureDate)
-                    DetailRow("Captura Longitud/ Latitud", "${selectedVisit!!.captureX} / ${selectedVisit!!.captureY}")
-                    DetailRow("Usuario evento", selectedVisit!!.eventUserName)
-                    DetailRow("Fecha evento", selectedVisit!!.eventDate)
-                    DetailRow("Evento Longitud/ Latitud", "${selectedVisit!!.eventX} / ${selectedVisit!!.eventY}")
-                    DetailRow("Creado por", selectedVisit!!.createUserName)
-                    DetailRow("Fecha creación", selectedVisit!!.createDate)
+                    // Card Asignación
+                    Card(
+                        shape = RoundedCornerShape(12.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(IntrinsicSize.Min)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .width(6.dp)
+                                    .fillMaxHeight()
+                                    .background(Color(0xFF0D47A1))
+                            )
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                Text(text = "Asignación", style = MaterialTheme.typography.headlineSmall)
+                                DetailRow("Fecha creación", selectedVisit!!.createDate)
+                                DetailRow("Creado por", selectedVisit!!.createUserName)
+                                DetailRow("Fecha evento", selectedVisit!!.eventDate)
+                                DetailRow("Usuario evento", selectedVisit!!.eventUserName)
+                                DetailRow("Evento Longitud/ Latitud", "${selectedVisit!!.eventX} / ${selectedVisit!!.eventY}") }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Card Captura
+                    Card(
+                        shape = RoundedCornerShape(12.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(IntrinsicSize.Min)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .width(6.dp)
+                                    .fillMaxHeight()
+                                    .background(Color(0xFF0D47A1))
+                            )
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                Text(text = "Captura", style = MaterialTheme.typography.headlineSmall)
+                                DetailRow("Fecha captura", selectedVisit!!.captureDate)
+                                // todo: captureUserName
+                                DetailRow("Captura Longitud/ Latitud", "${selectedVisit!!.captureX} / ${selectedVisit!!.captureY}")
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Card Última edición
+                    Card(
+                        shape = RoundedCornerShape(12.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(IntrinsicSize.Min)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .width(6.dp)
+                                    .fillMaxHeight()
+                                    .background(Color(0xFF0D47A1))
+                            )
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                Text(text = "Última edición", style = MaterialTheme.typography.headlineSmall)
+                                // todo: lasteditDate
+                                // todo: lasteditname
+                                // todo: lasteditx / lastedity
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
                 }
             }
         }

@@ -78,6 +78,14 @@ fun MapScreen(
         /* --------- CONTENIDO HOJA INFERIOR --------- */
         sheetContent = {
             if (selectedVisit == null) {
+                Text(
+                    text = "Puntos a visitar",
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .fillMaxWidth(),
+                )
+                HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
                 /* ---------- LISTA PRINCIPAL ---------- */
                 Column(
                     modifier = Modifier
@@ -86,12 +94,6 @@ fun MapScreen(
                         .padding(horizontal = 16.dp)
                         .verticalScroll(rememberScrollState()) // Habilitar scroll
                 ) {
-                    Text(
-                        text = "Puntos a visitar",
-                        style = MaterialTheme.typography.titleLarge,
-                    )
-                    HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
-
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -157,6 +159,28 @@ fun MapScreen(
                     }
                 }
             } else {
+                /* Botón regreso */
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    IconButton(onClick = { selectedVisit = null }) {
+                        Icon(
+                            imageVector = ArrowBack,
+                            contentDescription = "Atrás"
+                        )
+                    }
+
+                    Text(
+                        text = "Detalle Predio",
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                }
+
+                HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
+
                 /* ---------- DETALLE ---------- */
                 Column(
                     modifier = Modifier
@@ -165,16 +189,6 @@ fun MapScreen(
                         .padding(horizontal = 24.dp)
                         .verticalScroll(rememberScrollState()) // Habilitar scroll
                 ) {
-                    /* Botón regreso */
-                    IconButton(onClick = { selectedVisit = null }) {
-                        Icon(
-                            imageVector = ArrowBack,
-                            contentDescription = "Atrás"
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
                     Text(
                         text = selectedVisit!!.idSearch,
                         style = MaterialTheme.typography.headlineSmall

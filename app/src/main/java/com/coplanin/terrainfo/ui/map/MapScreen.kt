@@ -13,20 +13,22 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.coplanin.terrainfo.R
 import com.coplanin.terrainfo.data.local.entity.CommonDataEntity
 import com.coplanin.terrainfo.ui.icons.ArrowBack
 import com.coplanin.terrainfo.ui.icons.SearchIcon
 import com.coplanin.terrainfo.ui.icons.User
-import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.model.CameraPosition
-import com.google.android.gms.maps.model.LatLng
-import com.google.maps.android.compose.GoogleMap
-import com.google.maps.android.compose.Marker
-import com.google.maps.android.compose.MarkerState
-import com.google.maps.android.compose.rememberCameraPositionState
+import com.mapbox.maps.Style
+import com.mapbox.maps.extension.compose.MapboxMap
+import com.mapbox.maps.extension.compose.annotation.generated.PointAnnotation
+import com.mapbox.maps.extension.compose.annotation.rememberIconImage
+import com.mapbox.maps.extension.compose.animation.viewport.rememberMapViewportState
+import com.mapbox.geojson.Point
+import com.mapbox.maps.extension.compose.style.MapStyle
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -41,10 +43,10 @@ fun MapScreen(
 
     /* --- Hoja inferior y cámara --- */
     val scaffoldState = rememberBottomSheetScaffoldState()
-    val bogota = LatLng(4.7110, -74.0721)
-    val cameraPositionState = rememberCameraPositionState {
+    // val bogota = LatLng(4.7110, -74.0721)
+    /*val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(bogota, 12f)
-    }
+    } */
 
     /* --- Búsqueda en barra superior --- */
     var searchText by remember { mutableStateOf("") }
@@ -53,14 +55,22 @@ fun MapScreen(
     var selectedVisit by remember { mutableStateOf<CommonDataEntity?>(null) }
 
     /* --- Centrar mapa cuando hay puntos --- */
-    LaunchedEffect(points) {
-        if (points.isNotEmpty()) {
-            cameraPositionState.animate(
-                update = CameraUpdateFactory.newLatLngZoom(points.first().latLng, 14f),
-                durationMs = 1_000
-            )
+    val viewportState = rememberMapViewportState {
+        setCameraOptions {
+            zoom(12.0)
+            center(Point.fromLngLat(-74.0721, 4.7110)) // Bogotá
         }
     }
+
+    LaunchedEffect(points) {
+        if (points.isNotEmpty()) {
+            viewportState.setCameraOptions {
+                zoom(14.0)
+                center(Point.fromLngLat(points.first().latLng.longitude, points.first().latLng.latitude))
+            }
+        }
+    }
+
 
     LaunchedEffect(selectedVisit) {
         scaffoldState.bottomSheetState.expand()
@@ -317,20 +327,31 @@ fun MapScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            GoogleMap(
-                modifier = Modifier.fillMaxSize(),
-                cameraPositionState = cameraPositionState
+            MapboxMap(
+                modifier = Modifier
+                    .fillMaxSize(),
+                mapViewportState = viewportState,
+                compass = {},        // Oculta brújula
+                scaleBar = {},       // Oculta barra de escala ✅
+                logo = {},           // (Opcional) Oculta logo de Mapbox
+                attribution = {},    // (Opcional) Oculta botón de atribución
+                style = { MapStyle(style = Style.LIGHT) }
             ) {
+                val markerIcon = rememberIconImage(
+                    key = R.drawable.red_marker, // Asegúrate de tener un ícono válido en `res/drawable`
+                    painter = painterResource(R.drawable.red_marker)
+                )
+
                 points.forEach { p ->
-                    Marker(
-                        state = MarkerState(position = p.latLng),
-                        title = p.title,
-                        onClick = {
-                            // Buscar el punto correspondiente en la lista de visitas
+                    val point = Point.fromLngLat(p.latLng.longitude, p.latLng.latitude)
+                    PointAnnotation(point = point) {
+                        iconImage = markerIcon
+                        // textField = p.title
+                        interactionsState.onClicked {
                             selectedVisit = visits.find { it.id == p.id }
-                            true // Indica que el evento fue manejado
+                            true
                         }
-                    )
+                    }
                 }
             }
 

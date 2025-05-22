@@ -189,7 +189,7 @@ fun MapScreen(
                     )
                 }
 
-                HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
+                HorizontalDivider(modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))
 
                 /* ---------- DETALLE ---------- */
                 Column(
@@ -317,6 +317,18 @@ fun MapScreen(
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
+                }
+
+                // Botón detalle predio
+                Button(
+                    onClick = { /* Acción del botón */ },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(20.dp),
+                    shape = RoundedCornerShape(30),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0D47A1))
+                ) {
+                    Text(text = "Ir al Predio", color = Color.White, style = MaterialTheme.typography.titleLarge)
                 }
             }
         }

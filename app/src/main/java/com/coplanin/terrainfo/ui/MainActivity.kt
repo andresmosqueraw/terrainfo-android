@@ -15,6 +15,9 @@ import dagger.hilt.android.AndroidEntryPoint
 import androidx.hilt.navigation.compose.hiltViewModel
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
+import com.coplanin.terrainfo.ui.predio.PredioScreen
 import com.coplanin.terrainfo.ui.profile.ProfileScreen
 
 @AndroidEntryPoint
@@ -44,13 +47,28 @@ class MainActivity : ComponentActivity() {
                             }
                         )
                     }
+
                     composable("map") {
-                        MapScreen(navController = navController)          // ⬅️ pasamos el navController
+                        MapScreen(navController = navController)
                     }
-                    composable("profile") {                               // ⬅️ nueva ruta
+
+                    composable("profile") {
                         ProfileScreen(navController = navController)
                     }
+
+                    // 🔽 Nueva ruta dinámica para el detalle del predio
+                    composable(
+                        route = "predio/{visitId}",
+                        arguments = listOf(navArgument("visitId") { type = NavType.StringType })
+                    ) { backStackEntry ->
+                        val visitId = backStackEntry.arguments?.getString("visitId") ?: return@composable
+                        PredioScreen(
+                            navController = navController,
+                            visitId = visitId
+                        )
+                    }
                 }
+
             }
         }
     }

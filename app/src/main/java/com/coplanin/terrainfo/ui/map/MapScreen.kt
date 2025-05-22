@@ -319,9 +319,11 @@ fun MapScreen(
                     Spacer(modifier = Modifier.height(16.dp))
                 }
 
-                // Botón detalle predio
+                // Botón ir al predio
                 Button(
-                    onClick = { /* Acción del botón */ },
+                    onClick = {
+                        selectedVisit?.let { navController.navigate("predio/${it.id}") }
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(20.dp),

@@ -16,6 +16,7 @@
         android:roundIcon="@mipmap/ceicol_short_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Terrainfo"
+        tools:replace="android:allowBackup"
         tools:targetApi="31">
         <activity
             android:name=".ui.MainActivity"
@@ -23,7 +24,6 @@
             android:theme="@style/Theme.Terrainfo">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>

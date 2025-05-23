@@ -86,6 +86,7 @@ dependencies {
     implementation("com.mapbox.maps:android:11.12.1")
     implementation("com.mapbox.maps:android-core:11.12.1")
     implementation("com.mapbox.extension:maps-compose:11.12.1")
+    implementation("mil.nga.geopackage:geopackage-android:6.7.4")
     // implementation("com.github.anboralabs:spatia-room:0.3.0")
     implementation(libs.dagger.hilt.android)
     ksp(libs.dagger.hilt.compiler)

@@ -356,7 +356,7 @@ fun MapScreen(
                     painter = painterResource(R.drawable.red_marker)
                 )
 
-                points.forEach { p ->
+                /* points.forEach { p ->
                     val point = Point.fromLngLat(p.latLng.longitude, p.latLng.latitude)
                     PointAnnotation(point = point) {
                         iconImage = markerIcon
@@ -366,7 +366,15 @@ fun MapScreen(
                             true
                         }
                     }
+                } */
+
+                points.forEach { p ->
+                    val geo = Point.fromLngLat(p.latLng.longitude, p.latLng.latitude)
+                    PointAnnotation(point = geo) {
+                        iconImage = markerIcon
+                    }
                 }
+
             }
 
             /* ----- Barra de búsqueda flotante ----- */

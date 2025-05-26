@@ -1,5 +1,6 @@
 package com.coplanin.terrainfo.ui.map
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -372,6 +373,22 @@ fun MapScreen(
                     val geo = Point.fromLngLat(p.latLng.longitude, p.latLng.latitude)
                     PointAnnotation(point = geo) {
                         iconImage = markerIcon
+                        interactionsState.onClicked {
+                            Log.d("MapScreen", "Punto clicado: ${p.title} (Lat: ${p.latLng.latitude}, Lng: ${p.latLng.longitude})")
+
+                            // Busca el CommonDataEntity correspondiente
+                            val matchingVisit = visits.find { it.idSearch == p.title }
+                            Log.d("MapScreen", "Buscando entidad con title: ${p.title}")
+
+                            if (matchingVisit != null) {
+                                Log.d("MapScreen", "Entidad encontrada: ${matchingVisit.idSearch}")
+                            } else {
+                                Log.d("MapScreen", "No se encontró una entidad con idSearch: ${p.title}")
+                            }
+
+                            selectedVisit = matchingVisit
+                            true
+                        }
                     }
                 }
 

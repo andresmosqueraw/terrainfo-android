@@ -29,7 +29,10 @@ import com.mapbox.maps.extension.compose.annotation.generated.PointAnnotation
 import com.mapbox.maps.extension.compose.annotation.rememberIconImage
 import com.mapbox.maps.extension.compose.animation.viewport.rememberMapViewportState
 import com.mapbox.geojson.Point
+import com.mapbox.maps.extension.compose.annotation.generated.PolygonAnnotation
+import com.mapbox.maps.extension.compose.annotation.generated.PolygonAnnotationState
 import com.mapbox.maps.extension.compose.style.MapStyle
+import com.mapbox.maps.plugin.annotation.generated.PolygonAnnotationOptions
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -41,13 +44,10 @@ fun MapScreen(
     /* --- Flujos de datos --- */
     val points by viewModel.points.collectAsState()
     val visits by viewModel.visits.collectAsState()
+    val polygonPoints by viewModel.polygonPoints.collectAsState()
 
     /* --- Hoja inferior y cámara --- */
     val scaffoldState = rememberBottomSheetScaffoldState()
-    // val bogota = LatLng(4.7110, -74.0721)
-    /*val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(bogota, 12f)
-    } */
 
     /* --- Búsqueda en barra superior --- */
     var searchText by remember { mutableStateOf("") }
@@ -357,17 +357,25 @@ fun MapScreen(
                     painter = painterResource(R.drawable.red_marker)
                 )
 
-                /* points.forEach { p ->
-                    val point = Point.fromLngLat(p.latLng.longitude, p.latLng.latitude)
-                    PointAnnotation(point = point) {
-                        iconImage = markerIcon
-                        // textField = p.title
-                        interactionsState.onClicked {
-                            selectedVisit = visits.find { it.id == p.id }
-                            true
-                        }
+                // Agregar polígonos
+                polygonPoints.forEach { latLngList ->
+                    Log.d("PolygonDebug", "Procesando lista de puntos: $latLngList")
+                    val points = latLngList.map {
+                        Log.d("PolygonDebug", "Transformando punto LatLng: $it")
+                        Point.fromLngLat(it.longitude, it.latitude)
                     }
-                } */
+                    Log.d("PolygonDebug", "Puntos transformados: $points")
+
+                    val polygonState = remember { PolygonAnnotationState() }
+                    polygonState.fillColor = Color(0xFFFF0000) // Color rojo
+                    Log.d("PolygonDebug", "Estado del polígono configurado con color: ${polygonState.fillColor}")
+
+                    PolygonAnnotation(
+                        points = listOf(points),
+                        polygonAnnotationState = polygonState
+                    )
+                    Log.d("PolygonDebug", "Polígono añadido al mapa con puntos: $points")
+                }
 
                 points.forEach { p ->
                     val geo = Point.fromLngLat(p.latLng.longitude, p.latLng.latitude)
@@ -391,6 +399,19 @@ fun MapScreen(
                         }
                     }
                 }
+
+
+                /* points.forEach { p ->
+                    val point = Point.fromLngLat(p.latLng.longitude, p.latLng.latitude)
+                    PointAnnotation(point = point) {
+                        iconImage = markerIcon
+                        // textField = p.title
+                        interactionsState.onClicked {
+                            selectedVisit = visits.find { it.id == p.id }
+                            true
+                        }
+                    }
+                } */
 
             }
 

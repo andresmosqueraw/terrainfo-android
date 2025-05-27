@@ -64,10 +64,16 @@ class MapViewModel @Inject constructor(
 
 
     private fun loadGpkgPoints(geoPackagePath: String) = viewModelScope.launch(Dispatchers.IO) {
+        Log.d("PointDebug", "→ Iniciando carga de puntos desde: $geoPackagePath")
         val manager = GeoPackageFactory.getManager(context)
-        val gpkg = manager.openExternal(File(geoPackagePath)) ?: return@launch
+        val gpkg = manager.openExternal(File(geoPackagePath)) ?: run {
+            Log.e("PointDebug", "❌ No se pudo abrir el GeoPackage en $geoPackagePath")
+            return@launch
+        }
 
+        Log.d("PointDebug", "✅ GeoPackage abierto correctamente")
         val dao = gpkg.getFeatureDao("ilc_predio")
+        Log.d("PointDebug", "📦 Tabla ilc_predio abierta con ${dao.count()} filas")
 
         val transform = ProjectionTransform(
             ProjectionFactory.getProjection(9377),
@@ -77,45 +83,68 @@ class MapViewModel @Inject constructor(
         val out = mutableListOf<MapPoint>()
 
         dao.queryForAll().use { cursor ->
+            var count = 0
             while (cursor.moveToNext()) {
                 val row = cursor.row
-                val geom = row.geometry?.geometry ?: continue
+                val geom = row.geometry?.geometry
+
+                if (geom == null) {
+                    Log.d("PointDebug", "⚠️ Fila sin geometría. Se omite.")
+                    continue
+                }
 
                 if (geom.geometryType == GeometryType.POINT) {
                     val src = geom as mil.nga.sf.Point
                     val dstCoord = transform.transform(ProjCoordinate(src.x, src.y))
 
-                    out += MapPoint(
-                        id = row.getValue("T_Id")?.toString()?.toInt() ?: 0,
-                        title = row.getValue("id_operacion")?.toString() ?: "",
+                    val id = row.getValue("T_Id")?.toString()?.toInt() ?: -1
+                    val title = row.getValue("id_operacion")?.toString() ?: "Sin título"
+
+                    val point = MapPoint(
+                        id = id,
+                        title = title,
                         latLng = LatLng(dstCoord.y, dstCoord.x)
                     )
+
+                    Log.d("PointDebug", "✔ Punto agregado: $point")
+                    out += point
+                    count++
+                } else {
+                    Log.d("PointDebug", "⛔ Tipo de geometría ignorado: ${geom.geometryType}")
                 }
             }
+            Log.d("PointDebug", "✅ Total puntos cargados: $count")
         }
 
         _points.emit(out)
         gpkg.close()
+        Log.d("PointDebug", "📦 GeoPackage cerrado tras procesar puntos")
     }
 
     private val _polygonPoints = MutableStateFlow<List<List<LatLng>>>(emptyList())
     val polygonPoints: StateFlow<List<List<LatLng>>> = _polygonPoints
 
     private fun loadGpkgPolygons(geoPackagePath: String) = viewModelScope.launch(Dispatchers.IO) {
+        Log.d("PolygonDebug", "→ Iniciando carga de polígonos desde: $geoPackagePath")
         val manager = GeoPackageFactory.getManager(context)
-        val gpkg = manager.openExternal(File(geoPackagePath)) ?: return@launch
+        val gpkg = manager.openExternal(File(geoPackagePath)) ?: run {
+            Log.e("PolygonDebug", "❌ No se pudo abrir el GeoPackage en $geoPackagePath")
+            return@launch
+        }
 
         val tables = gpkg.featureTables
+        Log.d("PolygonDebug", "📂 Tablas disponibles: $tables")
+
         if (!tables.contains("cr_terreno")) {
             Log.d("PolygonDebug", "❌ La tabla 'cr_terreno' NO existe.")
             gpkg.close()
             return@launch
         }
 
-        Log.d("PolygonDebug", "✅ La tabla 'cr_terreno' SÍ existe.")
+        Log.d("PolygonDebug", "✅ Tabla 'cr_terreno' encontrada")
         val dao = gpkg.getFeatureDao("cr_terreno")
         val columns = dao.columnNames
-        Log.d("PolygonDebug", "Columnas:"); columns.forEach { Log.d("PolygonDebug", "- $it") }
+        Log.d("PolygonDebug", "📑 Columnas de 'cr_terreno':"); columns.forEach { Log.d("PolygonDebug", "- $it") }
 
         val transform = ProjectionTransform(
             ProjectionFactory.getProjection(9377),
@@ -129,10 +158,18 @@ class MapViewModel @Inject constructor(
             while (cursor.moveToNext()) {
                 index++
                 val row = cursor.row
-                Log.d("PolygonDebug", "Fila #$index")
-                columns.forEach { col -> Log.d("PolygonDebug", "$col = ${row.getValue(col)}") }
+                Log.d("PolygonDebug", "📌 Fila #$index")
 
-                val geometry = row.geometry?.geometry ?: continue
+                columns.forEach { col ->
+                    val value = row.getValue(col)
+                    Log.d("PolygonDebug", "$col = $value")
+                }
+
+                val geometry = row.geometry?.geometry
+                if (geometry == null) {
+                    Log.d("PolygonDebug", "⚠️ Fila sin geometría. Se omite.")
+                    continue
+                }
 
                 when (geometry.geometryType) {
                     GeometryType.POLYGON -> {
@@ -143,26 +180,31 @@ class MapViewModel @Inject constructor(
                             LatLng(dst.y, dst.x)
                         }
                         polygons.add(latLngs)
+                        Log.d("PolygonDebug", "✔ POLYGON agregado con ${latLngs.size} puntos")
                     }
+
                     GeometryType.MULTIPOLYGON -> {
                         val multiPolygon = geometry as mil.nga.sf.MultiPolygon
-                        multiPolygon.polygons.forEach { poly ->
-                            val ring = poly.rings.firstOrNull() ?: return@forEach
+                        multiPolygon.polygons.forEachIndexed { i, poly ->
+                            val ring = poly.rings.firstOrNull() ?: return@forEachIndexed
                             val latLngs = ring.points.map {
                                 val dst = transform.transform(ProjCoordinate(it.x, it.y))
                                 LatLng(dst.y, dst.x)
                             }
                             polygons.add(latLngs)
+                            Log.d("PolygonDebug", "✔ MULTIPOLYGON[$i] agregado con ${latLngs.size} puntos")
                         }
                     }
-                    else -> Log.d("PolygonDebug", "Tipo no soportado: ${geometry.geometryType}")
+
+                    else -> Log.d("PolygonDebug", "⛔ Tipo de geometría no soportado: ${geometry.geometryType}")
                 }
             }
         }
 
         _polygonPoints.emit(polygons)
-        Log.d("PolygonDebug", "Total de polígonos emitidos: ${polygons.size}")
+        Log.d("PolygonDebug", "✅ Total de polígonos emitidos: ${polygons.size}")
         gpkg.close()
+        Log.d("PolygonDebug", "📦 GeoPackage cerrado tras procesar polígonos")
     }
 
 

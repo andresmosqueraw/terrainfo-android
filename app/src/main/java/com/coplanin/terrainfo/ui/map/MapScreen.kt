@@ -323,7 +323,7 @@ fun MapScreen(
                 // Botón ir al predio
                 Button(
                     onClick = {
-                        selectedVisit?.let { navController.navigate("predio/${it.id}") }
+                        selectedVisit?.let { navController.navigate("predio/${it.idSearch}") }
                     },
                     modifier = Modifier
                         .fillMaxWidth()

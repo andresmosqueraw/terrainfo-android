@@ -359,24 +359,22 @@ fun MapScreen(
 
                 // Agregar polígonos
                 polygonPoints.forEach { latLngList ->
-                    val points = latLngList.map {
+                    val mappedPolygonPoints = latLngList.map {
                         Point.fromLngLat(it.longitude, it.latitude)
                     }
 
-                    // Crear el polígono
                     val polygonState = remember { PolygonAnnotationState() }
                     polygonState.fillColor = Color(0xFFFFA500) // Color naranja
                     polygonState.fillOutlineColor = Color(0xFF000000) // Color negro
                     polygonState.fillOpacity = 0.3 // Opacidad del relleno
 
                     PolygonAnnotation(
-                        points = listOf(points),
+                        points = listOf(mappedPolygonPoints),
                         polygonAnnotationState = polygonState
                     )
 
-                    // Superponer una línea para simular el borde con mayor grosor
                     PolylineAnnotation(
-                        points = points + points.first(), // Cerrar el polígono
+                        points = mappedPolygonPoints + mappedPolygonPoints.first(), // Cerrar el polígono
                     ) {
                         lineColor = Color(0xFF000000) // Color del borde
                         lineWidth = 1.0 // Grosor del borde en píxeles
@@ -387,6 +385,7 @@ fun MapScreen(
                     val geo = Point.fromLngLat(p.latLng.longitude, p.latLng.latitude)
                     PointAnnotation(point = geo) {
                         iconImage = markerIcon
+                        iconSize = 0.8
                         interactionsState.onClicked {
                             Log.d("MapScreen", "Punto clicado: ${p.title} (Lat: ${p.latLng.latitude}, Lng: ${p.latLng.longitude})")
 

@@ -32,7 +32,7 @@ import com.mapbox.geojson.Point
 import com.mapbox.maps.extension.compose.annotation.generated.PolygonAnnotation
 import com.mapbox.maps.extension.compose.annotation.generated.PolygonAnnotationState
 import com.mapbox.maps.extension.compose.style.MapStyle
-import com.mapbox.maps.plugin.annotation.generated.PolygonAnnotationOptions
+import com.mapbox.maps.extension.compose.annotation.generated.PolylineAnnotation
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -359,22 +359,28 @@ fun MapScreen(
 
                 // Agregar polígonos
                 polygonPoints.forEach { latLngList ->
-                    Log.d("PolygonDebug", "Procesando lista de puntos: $latLngList")
                     val points = latLngList.map {
-                        Log.d("PolygonDebug", "Transformando punto LatLng: $it")
                         Point.fromLngLat(it.longitude, it.latitude)
                     }
-                    Log.d("PolygonDebug", "Puntos transformados: $points")
 
+                    // Crear el polígono
                     val polygonState = remember { PolygonAnnotationState() }
-                    polygonState.fillColor = Color(0xFFFF0000) // Color rojo
-                    Log.d("PolygonDebug", "Estado del polígono configurado con color: ${polygonState.fillColor}")
+                    polygonState.fillColor = Color(0xFFFFA500) // Color naranja
+                    polygonState.fillOutlineColor = Color(0xFF000000) // Color negro
+                    polygonState.fillOpacity = 0.3 // Opacidad del relleno
 
                     PolygonAnnotation(
                         points = listOf(points),
                         polygonAnnotationState = polygonState
                     )
-                    Log.d("PolygonDebug", "Polígono añadido al mapa con puntos: $points")
+
+                    // Superponer una línea para simular el borde con mayor grosor
+                    PolylineAnnotation(
+                        points = points + points.first(), // Cerrar el polígono
+                    ) {
+                        lineColor = Color(0xFF000000) // Color del borde
+                        lineWidth = 1.0 // Grosor del borde en píxeles
+                    }
                 }
 
                 points.forEach { p ->

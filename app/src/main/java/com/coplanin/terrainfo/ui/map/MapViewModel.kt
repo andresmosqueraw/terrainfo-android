@@ -30,31 +30,12 @@ class MapViewModel @Inject constructor(
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
-    /** Lista reactiva de puntos a pintar en el mapa */
-    /*val points: StateFlow<List<MapPoint>> =
-        dao.observePoints()
-            .map { list ->
-                list.map { p ->
-                    MapPoint(
-                        id = p.id,
-                        title = p.activityName,
-                        //  ⬇️  LAT = eventX ,  LNG = eventY
-                        latLng = LatLng(p.eventX, p.eventY)
-                    )
-                }
-            }
-            .stateIn(
-                scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(5_000),
-                initialValue = emptyList()
-            )*/
-
     private val _points = MutableStateFlow<List<MapPoint>>(emptyList())
     val points: StateFlow<List<MapPoint>> = _points
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
-            val file = copyAssetToFile(context, "modelo_col_smart.gpkg")
+            val file = copyAssetToFile(context, "modelo_col_smart_vc.gpkg")
             Log.d("GeoPkgInit", "GeoPackage copiado a ruta: ${file.absolutePath}")
 
             loadGpkgPolygons(file.absolutePath)
@@ -166,6 +147,7 @@ class MapViewModel @Inject constructor(
                 }
 
                 val geometry = row.geometry?.geometry
+                Log.d("PolygonDebug", "❌ Fila sin geometría. Cruda: ${columns.joinToString { col -> "$col=${row.getValue(col)}" }}")
                 if (geometry == null) {
                     Log.d("PolygonDebug", "⚠️ Fila sin geometría. Se omite.")
                     continue
@@ -174,7 +156,11 @@ class MapViewModel @Inject constructor(
                 when (geometry.geometryType) {
                     GeometryType.POLYGON -> {
                         val polygon = geometry as mil.nga.sf.Polygon
-                        val ring = polygon.rings.firstOrNull() ?: continue
+                        val ring = polygon.rings.firstOrNull()
+                        if (ring == null) {
+                            Log.d("PolygonDebug", "⚠️ POLYGON sin anillo exterior")
+                            continue
+                        }
                         val latLngs = ring.points.map {
                             val dst = transform.transform(ProjCoordinate(it.x, it.y))
                             LatLng(dst.y, dst.x)

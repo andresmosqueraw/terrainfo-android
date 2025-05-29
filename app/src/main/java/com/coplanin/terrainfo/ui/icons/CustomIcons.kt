@@ -137,8 +137,6 @@ public val Person: ImageVector
 private var _person: ImageVector? = null
 
 
-
-
 public val EyeSlash: ImageVector
     get() {
         if (_eye_slash != null) {
@@ -401,4 +399,49 @@ public val ArrowBack: ImageVector
     }
 
 private var _arrow_back: ImageVector? = null
+
+
+
+public val Pencil: ImageVector
+    get() {
+        if (_pencil != null) {
+            return _pencil!!
+        }
+        _pencil = ImageVector.Builder(
+            name = "Pencil",
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
+            viewportWidth = 24f,
+            viewportHeight = 24f
+        ).apply {
+            path(
+                fill = null,
+                fillAlpha = 1.0f,
+                stroke = SolidColor(Color(0xFF0F172A)),
+                strokeAlpha = 1.0f,
+                strokeLineWidth = 1.5f,
+                strokeLineCap = StrokeCap.Round,
+                strokeLineJoin = StrokeJoin.Round,
+                strokeLineMiter = 1.0f,
+                pathFillType = PathFillType.NonZero
+            ) {
+                moveTo(16.8617f, 4.48667f)
+                lineTo(18.5492f, 2.79917f)
+                curveTo(19.2814f, 2.0669f, 20.4686f, 2.0669f, 21.2008f, 2.7992f)
+                curveTo(21.9331f, 3.5314f, 21.9331f, 4.7186f, 21.2008f, 5.4508f)
+                lineTo(6.83218f, 19.8195f)
+                curveTo(6.3035f, 20.3481f, 5.6514f, 20.7368f, 4.9349f, 20.9502f)
+                lineTo(2.25f, 21.75f)
+                lineTo(3.04978f, 19.0651f)
+                curveTo(3.2632f, 18.3486f, 3.6519f, 17.6965f, 4.1805f, 17.1678f)
+                lineTo(16.8617f, 4.48667f)
+                close()
+                moveTo(16.8617f, 4.48667f)
+                lineTo(19.5f, 7.12499f)
+            }
+        }.build()
+        return _pencil!!
+    }
+
+private var _pencil: ImageVector? = null
 

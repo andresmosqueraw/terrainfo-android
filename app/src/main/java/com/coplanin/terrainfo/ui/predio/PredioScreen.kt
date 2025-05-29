@@ -19,6 +19,8 @@ import androidx.navigation.NavController
 import com.coplanin.terrainfo.data.local.entity.PredioEntity
 import com.coplanin.terrainfo.data.local.entity.TerrainEntity
 import com.coplanin.terrainfo.ui.icons.ArrowBack
+import com.coplanin.terrainfo.ui.icons.Pencil
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -115,6 +117,7 @@ private fun PredioContent(
 @Composable
 private fun CardSection(
     title: String,
+    onEditClick: (() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit
 ) {
     Card(
@@ -123,14 +126,38 @@ private fun CardSection(
         colors = CardDefaults.cardColors(containerColor = Color.White),
         modifier = Modifier.fillMaxWidth()
     ) {
-        Row(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+        ) {
             Box(
-                Modifier.width(6.dp).fillMaxHeight()
+                Modifier
+                    .width(6.dp)
+                    .fillMaxHeight()
                     .background(Color(0xFF0D47A1))
             )
-            Column(Modifier.padding(16.dp)) {
-                Text(title, style = MaterialTheme.typography.headlineSmall)
+
+            Column(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .weight(1f)
+            ) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.headlineSmall
+                )
                 content()
+            }
+
+            Box(
+                modifier = Modifier
+                    .padding(end = 12.dp)
+                    .fillMaxHeight(),
+                contentAlignment = Alignment.Center
+            ) {
+                IconButton(onClick = { onEditClick?.invoke() }) {
+                    Icon(Pencil, contentDescription = "Editar")
+                }
             }
         }
     }

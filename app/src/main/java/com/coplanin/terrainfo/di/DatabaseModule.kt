@@ -21,4 +21,7 @@ object DatabaseModule {
     @Provides fun userDao(db: TerrainfoDb) = db.userDao()
     @Provides
     fun commonDataDao(db: TerrainfoDb) = db.commonDataDao()
+
+    @Provides fun predioDao(db: TerrainfoDb) = db.predioDao()
+    @Provides fun terrenoDao(db: TerrainfoDb) = db.terrenoDao()
 }

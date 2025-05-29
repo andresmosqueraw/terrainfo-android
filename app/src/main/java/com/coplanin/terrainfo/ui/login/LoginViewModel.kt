@@ -1,13 +1,16 @@
 package com.coplanin.terrainfo.ui.login
 
+import android.content.Context
 import android.location.Location
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.coplanin.terrainfo.data.gpkg.GpkgImporter
 import com.coplanin.terrainfo.data.repository.AuthRepository
 import com.coplanin.terrainfo.data.repository.CommonDataRepository
+import com.coplanin.terrainfo.data.repository.LocalDataRepository
 import com.google.gson.GsonBuilder
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -17,7 +20,9 @@ import javax.inject.Inject
 @HiltViewModel
 class LoginViewModel @Inject constructor(
     private val authRepo: AuthRepository,
-    private val commonRepo: CommonDataRepository
+    private val commonRepo: CommonDataRepository,
+    private val gpkgImporter: GpkgImporter,
+    private val localRepo: LocalDataRepository
 ) : ViewModel() {
 
     var uiState by mutableStateOf(LoginUiState())
@@ -35,7 +40,11 @@ class LoginViewModel @Inject constructor(
         uiState = uiState.copy(password = newPassword)
     }
 
-    fun onLoginClicked(onLoginSuccess: () -> Unit, location: Location?) {
+    fun onLoginClicked(
+        context: Context,
+        onLoginSuccess: () -> Unit,
+        location: Location?
+    ) {
         if (uiState.email.isBlank() || uiState.password.isBlank() || uiState.municipio.isBlank()) {
             uiState = uiState.copy(
                 errorMessage = "Campos vacíos",
@@ -55,6 +64,14 @@ class LoginViewModel @Inject constructor(
                     loc = location
                 )
                 commonRepo.sync(uiState.email, token)
+
+                // Verifica si ya se migraron los datos
+                val predioCount = localRepo.getPredioCount()
+
+                if (predioCount == 0) {
+                    gpkgImporter.import(context) // Requiere pasar `ApplicationContext`
+                }
+
                 uiState = uiState.copy(isLoading = false)
                 onLoginSuccess()
             } catch (e: HttpException) {
@@ -83,5 +100,6 @@ class LoginViewModel @Inject constructor(
         uiState = uiState.copy(errorMessage = null)
     }
 }
+
 
 data class ErrorResponse(val error: String?)

@@ -15,7 +15,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import android.Manifest
@@ -211,9 +210,9 @@ fun LoginScreen(
                     onClick = {
                         if (locationPermission.status.isGranted) {
                             fusedClient.lastLocation.addOnSuccessListener { location ->
-                                loginViewModel.onLoginClicked(onLoginSuccess, location)
+                                loginViewModel.onLoginClicked(context, onLoginSuccess, location)
                             }.addOnFailureListener {
-                                loginViewModel.onLoginClicked(onLoginSuccess, null)
+                                loginViewModel.onLoginClicked(context, onLoginSuccess, null)
                             }
                         } else {
                             locationPermission.launchPermissionRequest()
@@ -236,15 +235,7 @@ fun LoginScreen(
     }
 }
 
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun LoginScreenPreview() {
-    /* MaterialTheme {
-        LoginScreen()
-    }*/
-}
-
-@OptIn(ExperimentalPermissionsApi::class)
+/* @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun EnsureLocationPermission(onGranted: (Boolean) -> Unit) {
     val permState = rememberPermissionState(
@@ -259,4 +250,4 @@ fun EnsureLocationPermission(onGranted: (Boolean) -> Unit) {
     LaunchedEffect(permState.status) {
         onGranted(permState.status.isGranted)
     }
-}
+} */

@@ -30,9 +30,8 @@ fun PredioScreen(
     viewModel: PredioViewModel = hiltViewModel()
 ) {
     // ───── Recuperar el registro de base de datos ─────
-    val context = LocalContext.current
     val detail by viewModel
-        .getPredioAndTerrain(context, visitId)
+        .getPredioAndTerrain(visitId)
         .collectAsState(initial = null)
 
 

@@ -1,24 +1,31 @@
 package com.coplanin.terrainfo.ui.predio
 
-import android.content.Context
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.coplanin.terrainfo.data.local.entity.PredioEntity
 import com.coplanin.terrainfo.data.local.entity.TerrainEntity
-import com.coplanin.terrainfo.util.copyAssetToFile
+import com.coplanin.terrainfo.data.repository.LocalDataRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import mil.nga.geopackage.GeoPackage
-import mil.nga.geopackage.GeoPackageFactory
 import javax.inject.Inject
-import java.io.File
 
 @HiltViewModel
-class PredioViewModel @Inject constructor() : ViewModel() {
+class PredioViewModel @Inject constructor(
+    private val repository: LocalDataRepository
+) : ViewModel() {
+    fun getPredioAndTerrain(idOperacion: String): Flow<Pair<PredioEntity, TerrainEntity?>?> = flow {
+        val predio = repository.getPredio(idOperacion)
+        val terreno = repository.getTerreno(idOperacion)
+
+        if (predio != null) {
+            emit(predio to terreno)
+        } else {
+            emit(null) // Emitir null si predio es nulo
+        }
+    }
 
     /**  🔑 Punto de entrada desde la UI  */
-    fun getPredioAndTerrain(
+    /*fun getPredioAndTerrain(
         context: Context,
         idOperacion: String
     ): Flow<Pair<PredioEntity, TerrainEntity?>?> = flow {
@@ -43,11 +50,11 @@ class PredioViewModel @Inject constructor() : ViewModel() {
         gpkg.close()
         Log.d(TAG, "✅ Emitiendo resultado: predio=$predio  terreno=$terreno")
         emit(predio to terreno)
-    }
+    } */
 
     /* ---------- helpers privados ---------- */
 
-    private fun openGeoPackage(context: Context): GeoPackage? {
+    /* private fun openGeoPackage(context: Context): GeoPackage? {
         val file = copyAssetToFile(context, "modelo_col_smart_vc.gpkg")
         Log.d(TAG, "📁 Copia local en ${file.absolutePath}")
         val gpkg = GeoPackageFactory.getManager(context)
@@ -56,12 +63,12 @@ class PredioViewModel @Inject constructor() : ViewModel() {
         if (gpkg == null) Log.e(TAG, "❌ No se pudo abrir GeoPackage")
         else Log.d(TAG, "📦 GeoPackage abierto OK")
         return gpkg
-    }
+    } */
 
     /**
      * Devuelve el PredioEntity + su T_Id (clave foránea).
      */
-    private fun loadPredio(gpkg: GeoPackage, idOperacion: String):
+    /* private fun loadPredio(gpkg: GeoPackage, idOperacion: String):
             Pair<PredioEntity, Int>? {
 
         val dao = gpkg.getFeatureDao("ilc_predio")
@@ -79,7 +86,7 @@ class PredioViewModel @Inject constructor() : ViewModel() {
                         codigoOrip   = row.getValue("codigo_orip")?.toString(),
                         matricula    = row.getValue("matricula_inmobiliaria")?.toString(),
                         areaTerreno  = row.getValue("area_catastral_terreno")?.toString(),
-                        numeroPredial= row.getValue("numero_predial_nacional")?.toString(),
+                        numeroPredial= row.getValue("numero_predial_nacional")?.toString()!!,
                         tipo         = row.getValue("tipo")?.toString(),
                         condicion    = row.getValue("condicion_predio")?.toString(),
                         destino      = row.getValue("destinacion_economica")?.toString(),
@@ -91,12 +98,12 @@ class PredioViewModel @Inject constructor() : ViewModel() {
             }
         }
         return null
-    }
+    } */
 
     /**
      * Busca en cr_terreno donde ilc_predio == tId.
      */
-    private fun loadTerrain(gpkg: GeoPackage, tId: Int): TerrainEntity? {
+    /* private fun loadTerrain(gpkg: GeoPackage, tId: Int): TerrainEntity? {
         val dao = gpkg.getFeatureDao("cr_terreno")
         Log.d(TAG, "🗂 cr_terreno rows=${dao.count()}  (buscando ilc_predio=$tId)")
 
@@ -106,7 +113,7 @@ class PredioViewModel @Inject constructor() : ViewModel() {
                 val fk  = row.getValue("ilc_predio")?.toString()?.toIntOrNull()
                 if (fk == tId) {
                     val terreno = TerrainEntity(
-                        idOperacionPredio = row.getValue("id_operacion_predio")?.toString(),
+                        idOperacionPredio = row.getValue("id_operacion_predio")?.toString()!!,
                         etiqueta          = row.getValue("etiqueta")?.toString()
                     )
                     Log.d(TAG, "🎯 Terreno encontrado: $terreno")
@@ -116,7 +123,7 @@ class PredioViewModel @Inject constructor() : ViewModel() {
         }
         Log.w(TAG, "⚠️ No hay terreno para ilc_predio=$tId")
         return null
-    }
+    }*/
 
-    companion object { private const val TAG = "PredioVM" }
+    // companion object { private const val TAG = "PredioVM" }
 }

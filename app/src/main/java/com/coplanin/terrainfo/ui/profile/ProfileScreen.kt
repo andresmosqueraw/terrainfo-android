@@ -13,7 +13,7 @@ import com.coplanin.terrainfo.ui.icons.ArrowBack
 import com.coplanin.terrainfo.ui.icons.User
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Composable                     // ⬅️  No Experimental annotation needed now
+@Composable
 fun ProfileScreen(
     navController: NavController,
     viewModel: ProfileViewModel = hiltViewModel()
@@ -22,7 +22,6 @@ fun ProfileScreen(
 
     Scaffold(
         topBar = {
-            /*  ✅  Use the stable composable  */
             TopAppBar(
                 title = { Text("Perfil") },
                 navigationIcon = {
@@ -46,10 +45,25 @@ fun ProfileScreen(
                 Text("${u.firstName} ${u.lastName}", style = MaterialTheme.typography.headlineSmall)
                 Text(u.email, style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
                 Spacer(Modifier.height(24.dp))
-                DetailRow("Username",    u.username)
-                DetailRow("Joined",      u.dateJoined)
-                DetailRow("Municipios",  u.municipios)
-                DetailRow("Permisos",    u.permissions)
+                DetailRow("Nombre de usuario", u.username)
+                DetailRow("Fecha de registro", u.dateJoined)
+                DetailRow("Municipios", u.municipios)
+                DetailRow("Permisos", u.permissions)
+
+                Spacer(Modifier.height(32.dp))
+
+                // Botón de cerrar sesión
+                Button(
+                    onClick = {
+                        viewModel.logout()
+                        navController.navigate("login") {
+                            popUpTo("profile") { inclusive = true }
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+                ) {
+                    Text("Cerrar sesión", color = Color.White)
+                }
             }
         }
     }

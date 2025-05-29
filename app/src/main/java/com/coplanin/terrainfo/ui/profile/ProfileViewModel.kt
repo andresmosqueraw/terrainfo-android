@@ -8,14 +8,14 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
-    userDao: UserDao
+    private val userDao: UserDao
 ) : ViewModel() {
 
-    /** To expose the single stored user (or null if not saved) */
     val user: StateFlow<UserEntity?> =
         userDao.observeCurrent()
             .stateIn(
@@ -23,4 +23,10 @@ class ProfileViewModel @Inject constructor(
                 started = SharingStarted.WhileSubscribed(5_000),
                 initialValue = null
             )
+
+    fun logout() {
+        viewModelScope.launch {
+            userDao.insert(UserEntity(0, "", "", "", "", "", "[]", "[]", 0L, 0.0, 0.0))
+        }
+    }
 }

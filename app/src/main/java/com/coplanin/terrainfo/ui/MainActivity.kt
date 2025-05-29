@@ -67,6 +67,25 @@ class MainActivity : ComponentActivity() {
                             visitId = visitId
                         )
                     }
+
+                    // 🔧 Ruta para editar predio
+                    composable(
+                        route = "predio_detail/{id}",
+                        arguments = listOf(navArgument("id") { type = NavType.StringType })
+                    ) { backStackEntry ->
+                        val id = backStackEntry.arguments?.getString("id") ?: ""
+                        com.coplanin.terrainfo.ui.predio.PredioEditScreen(id, navController)
+                    }
+
+                    // 🔧 Ruta para editar terreno
+                    composable(
+                        route = "terreno_detail/{id}",
+                        arguments = listOf(navArgument("id") { type = NavType.StringType })
+                    ) { backStackEntry ->
+                        val id = backStackEntry.arguments?.getString("id") ?: ""
+                        com.coplanin.terrainfo.ui.terreno.TerrenoEditScreen(id, navController)
+                    }
+
                 }
 
             }

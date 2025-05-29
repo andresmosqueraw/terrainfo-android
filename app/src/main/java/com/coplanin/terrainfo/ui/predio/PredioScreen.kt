@@ -64,6 +64,7 @@ fun PredioScreen(
             PredioContent(
                 predio = predio,
                 terreno = terreno,
+                navController = navController, // <-- aquí
                 modifier = Modifier
                     .padding(inner)
                     .fillMaxSize()
@@ -85,14 +86,20 @@ private fun Detail(label: String, value: String?) {
 private fun PredioContent(
     predio: PredioEntity,
     terreno: TerrainEntity?,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    navController: NavController // ← agrega esto
 ) {
     Log.d("PredioScreen", "🧾 UI predio=$predio | terreno=$terreno")
 
     Column(modifier.padding(24.dp)) {
 
-        /* ---------- CARD - PREDIO ---------- */
-        CardSection(title = "Predio") {
+        // ---------- CARD - PREDIO ----------
+        CardSection(
+            title = "Predio",
+            onEditClick = {
+                navController.navigate("predio_detail/${predio.numeroPredial}")
+            }
+        ) {
             Detail("Código ORIP", predio.codigoOrip)
             Detail("Matrícula Inmobiliaria", predio.matricula)
             Detail("Área Catastral Terreno", predio.areaTerreno)
@@ -105,8 +112,15 @@ private fun PredioContent(
 
         Spacer(Modifier.height(24.dp))
 
-        /* ---------- CARD - TERRENO ---------- */
-        CardSection(title = "Terreno") {
+        // ---------- CARD - TERRENO ----------
+        CardSection(
+            title = "Terreno",
+            onEditClick = {
+                terreno?.idOperacionPredio?.let {
+                    navController.navigate("terreno_detail/$it")
+                }
+            }
+        ) {
             Detail("Id Operación Predio", terreno?.idOperacionPredio)
             Detail("Etiqueta", terreno?.etiqueta)
         }

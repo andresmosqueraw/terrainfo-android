@@ -72,7 +72,6 @@ fun MapScreen(
         }
     }
 
-
     LaunchedEffect(selectedVisit) {
         scaffoldState.bottomSheetState.expand()
     }
@@ -327,7 +326,7 @@ fun MapScreen(
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(20.dp),
+                        .padding(start = 20.dp, top = 20.dp, end = 20.dp, bottom = 36.dp),
                     shape = RoundedCornerShape(30),
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0D47A1))
                 ) {
@@ -343,13 +342,12 @@ fun MapScreen(
                 .padding(innerPadding)
         ) {
             MapboxMap(
-                modifier = Modifier
-                    .fillMaxSize(),
+                modifier = Modifier.fillMaxSize(),
                 mapViewportState = viewportState,
                 compass = {},        // Oculta brújula
-                scaleBar = {},       // Oculta barra de escala ✅
-                logo = {},           // (Opcional) Oculta logo de Mapbox
-                attribution = {},    // (Opcional) Oculta botón de atribución
+                scaleBar = {},       // Oculta barra de escala
+                logo = {},           // Oculta logo Mapbox
+                attribution = {},    // Oculta atribución
                 style = { MapStyle(style = Style.LIGHT) }
             ) {
                 val markerIcon = rememberIconImage(
@@ -436,18 +434,11 @@ fun MapScreen(
                     onValueChange = { searchText = it },
                     placeholder = { Text("Buscar aquí") },
                     leadingIcon = {
-                        Icon(
-                            imageVector = SearchIcon,
-                            contentDescription = "Buscar"
-                        )
+                        Icon(imageVector = SearchIcon, contentDescription = "Buscar")
                     },
                     trailingIcon = {
                         IconButton(onClick = { navController.navigate("profile") }) {
-                            Icon(
-                                imageVector = User,
-                                contentDescription = "Account",
-                                modifier = Modifier.size(24.dp)
-                            )
+                            Icon(imageVector = User, contentDescription = "Account", modifier = Modifier.size(24.dp))
                         }
                     },
                     singleLine = true,
@@ -464,6 +455,21 @@ fun MapScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 8.dp)
+                )
+            }
+
+            /* ---------- FAB con ícono "+" ---------- */
+            FloatingActionButton(
+                onClick = { /* TODO: acción al presionar el + */ },
+                containerColor = Color(0xFF0D47A1),
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(24.dp)          // margen respecto a bordes
+            ) {
+                Icon(
+                    imageVector = ArrowBack,
+                    contentDescription = "Agregar",
+                    tint = Color.White
                 )
             }
         }

@@ -22,7 +22,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun EditFieldCard(label: String, value: String) {
+fun EditFieldCard(
+    label: String,
+    value: String,
+    onValueChange: (String) -> Unit,
+    readOnly: Boolean = false
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -34,9 +39,10 @@ fun EditFieldCard(label: String, value: String) {
             Text(text = label, style = MaterialTheme.typography.bodyMedium)
             OutlinedTextField(
                 value = value,
-                onValueChange = {},
+                onValueChange = onValueChange,
                 modifier = Modifier.fillMaxWidth(),
-                singleLine = true
+                singleLine = true,
+                readOnly = readOnly
             )
         }
     }
@@ -44,9 +50,13 @@ fun EditFieldCard(label: String, value: String) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DropdownFieldCard(label: String, options: List<String>, selected: String) {
+fun DropdownFieldCard(
+    label: String,
+    options: List<String>,
+    selected: String,
+    onSelectedChange: (String) -> Unit
+) {
     var expanded by remember { mutableStateOf(false) }
-    var selectedOption by remember { mutableStateOf(selected) }
 
     Card(
         modifier = Modifier
@@ -62,7 +72,7 @@ fun DropdownFieldCard(label: String, options: List<String>, selected: String) {
                 onExpandedChange = { expanded = !expanded }
             ) {
                 OutlinedTextField(
-                    value = selectedOption,
+                    value = selected,
                     onValueChange = {},
                     readOnly = true,
                     modifier = Modifier
@@ -79,7 +89,7 @@ fun DropdownFieldCard(label: String, options: List<String>, selected: String) {
                         DropdownMenuItem(
                             text = { Text(option) },
                             onClick = {
-                                selectedOption = option
+                                onSelectedChange(option)
                                 expanded = false
                             }
                         )

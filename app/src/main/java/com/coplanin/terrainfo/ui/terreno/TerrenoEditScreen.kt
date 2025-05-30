@@ -1,36 +1,43 @@
 package com.coplanin.terrainfo.ui.terreno
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.coplanin.terrainfo.data.local.entity.TerrainEntity
 import com.coplanin.terrainfo.ui.components.EditFieldCard
 import com.coplanin.terrainfo.ui.icons.ArrowBack
-import com.coplanin.terrainfo.ui.icons.Trash
+import com.coplanin.terrainfo.ui.predio.PredioViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TerrenoEditScreen(
     id: String,
     etiqueta: String,
-    navController: NavController
+    navController: NavController,
+    viewModel: PredioViewModel = hiltViewModel()
 ) {
+    // Estado local para el campo
+    var etiquetaState by remember { mutableStateOf(etiqueta) }
+
+    // Asegurarse de que el GeoPackage esté abierto al cargar la pantalla
+    val context = LocalContext.current
+    LaunchedEffect(Unit) {
+        viewModel.openGeoPackage(context)
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -49,12 +56,19 @@ fun TerrenoEditScreen(
                 .padding(16.dp)
                 .verticalScroll(rememberScrollState())
         ) {
-            EditFieldCard(label = "Etiqueta", value = etiqueta)
+            EditFieldCard(label = "Etiqueta", value = etiquetaState, onValueChange = { etiquetaState = it })
 
             Spacer(Modifier.height(24.dp))
 
             Button(
-                onClick = { /* guardar */ },
+                onClick = {
+                    val updatedTerreno = TerrainEntity(
+                        idOperacionPredio = id,
+                        etiqueta = etiquetaState
+                    )
+                    viewModel.updateTerreno(id, updatedTerreno)
+                    navController.navigateUp()
+                },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0D47A1))
             ) {

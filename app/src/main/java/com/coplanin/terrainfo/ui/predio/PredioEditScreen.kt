@@ -22,7 +22,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.coplanin.terrainfo.data.local.entity.PredioEntity
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,8 +42,23 @@ fun PredioEditScreen(
     condicion: String,
     destino: String,
     areaRegistral: String,
-    navController: NavController
+    navController: NavController,
+    viewModel: PredioViewModel = hiltViewModel()
 ) {
+    // Estados locales para los campos
+    var codigoOripState by remember { mutableStateOf(codigoOrip) }
+    var matriculaState by remember { mutableStateOf(matricula) }
+    var areaTerrenoState by remember { mutableStateOf(areaTerreno) }
+    var tipoState by remember { mutableStateOf(tipo) }
+    var condicionState by remember { mutableStateOf(condicion) }
+    var destinoState by remember { mutableStateOf(destino) }
+    var areaRegistralState by remember { mutableStateOf(areaRegistral) }
+
+    // Si estás usando Compose y necesitas un Context
+    val context = LocalContext.current
+
+    // Asegúrate de pasar este `context` a las funciones que lo requieran
+    viewModel.getPredioAndTerrain(context, id)
     Scaffold(
         topBar = {
             TopAppBar(
@@ -55,24 +77,45 @@ fun PredioEditScreen(
                 .padding(16.dp)
                 .verticalScroll(rememberScrollState())
         ) {
-            EditFieldCard(label = "Código ORIP", value = codigoOrip)
-            EditFieldCard(label = "Matrícula Inmobiliaria", value = matricula)
-            EditFieldCard(label = "Área Catastral Terreno", value = areaTerreno)
-            EditFieldCard(label = "Número Predial Nacional", value = id)
-            DropdownFieldCard(label = "Tipo", options = listOf("Privado", "Público"), selected = tipo)
-            DropdownFieldCard(label = "Condición Predio", options = listOf("NPH", "Propio"), selected = condicion)
-            DropdownFieldCard(label = "Destino Económico", options = listOf("Residencial", "Comercial"), selected = destino)
-            EditFieldCard(label = "Área Registral m²", value = areaRegistral)
+            EditFieldCard(label = "Código ORIP", value = codigoOripState, onValueChange = { codigoOripState = it })
+            EditFieldCard(label = "Matrícula Inmobiliaria", value = matriculaState, onValueChange = { matriculaState = it })
+            EditFieldCard(label = "Área Catastral Terreno", value = areaTerrenoState, onValueChange = { areaTerrenoState = it })
+            EditFieldCard(
+                label = "Número Predial Nacional",
+                value = id,
+                onValueChange = {}, // Lambda vacía para cumplir con el requisito
+                readOnly = true
+            )
+            DropdownFieldCard(label = "Tipo", options = listOf("Privado", "Público"), selected = tipoState, onSelectedChange = { tipoState = it })
+            DropdownFieldCard(label = "Condición Predio", options = listOf("NPH", "Propio"), selected = condicionState, onSelectedChange = { condicionState = it })
+            DropdownFieldCard(label = "Destino Económico", options = listOf("Residencial", "Comercial"), selected = destinoState, onSelectedChange = { destinoState = it })
+            EditFieldCard(label = "Área Registral m²", value = areaRegistralState, onValueChange = { areaRegistralState = it })
 
             Spacer(Modifier.height(24.dp))
 
             Button(
-                onClick = { /* guardar */ },
+                onClick = {
+                    val updatedPredio = PredioEntity(
+                        codigoOrip = codigoOripState,
+                        matricula = matriculaState,
+                        areaTerreno = areaTerrenoState,
+                        numeroPredial = id,
+                        tipo = tipoState,
+                        condicion = condicionState,
+                        destino = destinoState,
+                        areaRegistral = areaRegistralState
+                    )
+                    viewModel.updatePredio(id, updatedPredio)
+                    viewModel.getPredioAndTerrain(context, id) // Forzar recarga
+                    navController.navigateUp()
+                },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0D47A1))
             ) {
                 Text("Guardar", color = Color.White)
             }
+
+            Spacer(Modifier.height(24.dp))
         }
     }
 }

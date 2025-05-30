@@ -51,7 +51,7 @@ fun PredioScreen(
         Scaffold(
             topBar = {
                 CenterAlignedTopAppBar(
-                    title = { Text("ColSmart IGAC") },
+                    title = { Text("Modelo Interno") },
                     navigationIcon = {
                         IconButton(onClick = { navController.navigateUp() }) {
                             Icon(ArrowBack, contentDescription = "Atrás")

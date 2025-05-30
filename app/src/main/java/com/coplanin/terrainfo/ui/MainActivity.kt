@@ -15,10 +15,12 @@ import dagger.hilt.android.AndroidEntryPoint
 import androidx.hilt.navigation.compose.hiltViewModel
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.coplanin.terrainfo.ui.predio.PredioEditScreen
 import com.coplanin.terrainfo.ui.predio.PredioScreen
+import com.coplanin.terrainfo.ui.predio.PredioViewModel
 import com.coplanin.terrainfo.ui.profile.ProfileScreen
 import com.coplanin.terrainfo.ui.terreno.TerrenoEditScreen
 
@@ -36,6 +38,13 @@ class MainActivity : ComponentActivity() {
         setContent {
             TerrainfoTheme {
                 val navController = rememberNavController()
+                val viewModel: PredioViewModel = hiltViewModel()
+
+                // Abrir el GeoPackage dentro de un LaunchedEffect
+                LaunchedEffect(Unit) {
+                    viewModel.openGeoPackage(this@MainActivity)
+                }
+
                 NavHost(navController = navController, startDestination = if (isLoggedIn) "map" else "login") {
                     composable("login") {
                         val loginViewModel: LoginViewModel = hiltViewModel()
@@ -58,21 +67,16 @@ class MainActivity : ComponentActivity() {
                         ProfileScreen(navController = navController)
                     }
 
-                    // 🔽 Nueva ruta dinámica para el detalle del predio
                     composable(
-                        route = "predio/{visitId}",
+                        "predio/{visitId}",
                         arguments = listOf(navArgument("visitId") { type = NavType.StringType })
                     ) { backStackEntry ->
-                        val visitId = backStackEntry.arguments?.getString("visitId") ?: return@composable
-                        PredioScreen(
-                            navController = navController,
-                            visitId = visitId
-                        )
+                        val visitId = backStackEntry.arguments?.getString("visitId") ?: ""
+                        PredioScreen(navController = navController, visitId = visitId)
                     }
 
-                    // 🔧 Ruta para editar predio
                     composable(
-                        route = "predio_detail/{id}?codigoOrip={codigoOrip}&matricula={matricula}&areaTerreno={areaTerreno}&tipo={tipo}&condicion={condicion}&destino={destino}&areaRegistral={areaRegistral}",
+                        "predio_detail/{id}?codigoOrip={codigoOrip}&matricula={matricula}&areaTerreno={areaTerreno}&tipo={tipo}&condicion={condicion}&destino={destino}&areaRegistral={areaRegistral}",
                         arguments = listOf(
                             navArgument("id") { type = NavType.StringType },
                             navArgument("codigoOrip") { type = NavType.StringType; defaultValue = "" },
@@ -84,37 +88,33 @@ class MainActivity : ComponentActivity() {
                             navArgument("areaRegistral") { type = NavType.StringType; defaultValue = "" }
                         )
                     ) { backStackEntry ->
-                        val args = backStackEntry.arguments!!
                         PredioEditScreen(
-                            id = args.getString("id") ?: "",
-                            codigoOrip = args.getString("codigoOrip") ?: "",
-                            matricula = args.getString("matricula") ?: "",
-                            areaTerreno = args.getString("areaTerreno") ?: "",
-                            tipo = args.getString("tipo") ?: "",
-                            condicion = args.getString("condicion") ?: "",
-                            destino = args.getString("destino") ?: "",
-                            areaRegistral = args.getString("areaRegistral") ?: "",
+                            id = backStackEntry.arguments?.getString("id") ?: "",
+                            codigoOrip = backStackEntry.arguments?.getString("codigoOrip") ?: "",
+                            matricula = backStackEntry.arguments?.getString("matricula") ?: "",
+                            areaTerreno = backStackEntry.arguments?.getString("areaTerreno") ?: "",
+                            tipo = backStackEntry.arguments?.getString("tipo") ?: "",
+                            condicion = backStackEntry.arguments?.getString("condicion") ?: "",
+                            destino = backStackEntry.arguments?.getString("destino") ?: "",
+                            areaRegistral = backStackEntry.arguments?.getString("areaRegistral") ?: "",
                             navController = navController
                         )
                     }
 
                     composable(
-                        route = "terreno_detail/{id}?etiqueta={etiqueta}",
+                        "terreno_detail/{id}?etiqueta={etiqueta}",
                         arguments = listOf(
                             navArgument("id") { type = NavType.StringType },
                             navArgument("etiqueta") { type = NavType.StringType; defaultValue = "" }
                         )
                     ) { backStackEntry ->
-                        val args = backStackEntry.arguments!!
                         TerrenoEditScreen(
-                            id = args.getString("id") ?: "",
-                            etiqueta = args.getString("etiqueta") ?: "",
+                            id = backStackEntry.arguments?.getString("id") ?: "",
+                            etiqueta = backStackEntry.arguments?.getString("etiqueta") ?: "",
                             navController = navController
                         )
                     }
-
                 }
-
             }
         }
     }

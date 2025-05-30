@@ -26,19 +26,18 @@ import com.coplanin.terrainfo.ui.icons.Trash
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TerrenoEditScreen(id: String, navController: NavController) {
+fun TerrenoEditScreen(
+    id: String,
+    etiqueta: String,
+    navController: NavController
+) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Terreno") },
+                title = { Text("Editar Terreno") },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
                         Icon(ArrowBack, contentDescription = "Atrás")
-                    }
-                },
-                actions = {
-                    IconButton(onClick = { /* eliminar acción */ }) {
-                        Icon(Trash, contentDescription = "Eliminar", tint = Color.Red)
                     }
                 }
             )
@@ -50,17 +49,7 @@ fun TerrenoEditScreen(id: String, navController: NavController) {
                 .padding(16.dp)
                 .verticalScroll(rememberScrollState())
         ) {
-            Button(
-                onClick = { /* geometría */ },
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0D47A1))
-            ) {
-                Text("Polígono", color = Color.White)
-            }
-
-            Spacer(Modifier.height(16.dp))
-
-            EditFieldCard(label = "Etiqueta", value = "Lote A-12")
+            EditFieldCard(label = "Etiqueta", value = etiqueta)
 
             Spacer(Modifier.height(24.dp))
 

@@ -97,7 +97,9 @@ private fun PredioContent(
         CardSection(
             title = "Predio",
             onEditClick = {
-                navController.navigate("predio_detail/${predio.numeroPredial}")
+                navController.navigate(
+                    "predio_detail/${predio.numeroPredial}?codigoOrip=${predio.codigoOrip}&matricula=${predio.matricula}&areaTerreno=${predio.areaTerreno}&tipo=${predio.tipo}&condicion=${predio.condicion}&destino=${predio.destino}&areaRegistral=${predio.areaRegistral ?: ""}"
+                )
             }
         ) {
             Detail("Código ORIP", predio.codigoOrip)
@@ -116,8 +118,8 @@ private fun PredioContent(
         CardSection(
             title = "Terreno",
             onEditClick = {
-                terreno?.idOperacionPredio?.let {
-                    navController.navigate("terreno_detail/$it")
+                terreno?.let {
+                    navController.navigate("terreno_detail/${it.idOperacionPredio}?etiqueta=${it.etiqueta}")
                 }
             }
         ) {

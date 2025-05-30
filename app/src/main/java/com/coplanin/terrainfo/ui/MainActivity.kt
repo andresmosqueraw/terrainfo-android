@@ -17,8 +17,10 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
+import com.coplanin.terrainfo.ui.predio.PredioEditScreen
 import com.coplanin.terrainfo.ui.predio.PredioScreen
 import com.coplanin.terrainfo.ui.profile.ProfileScreen
+import com.coplanin.terrainfo.ui.terreno.TerrenoEditScreen
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -70,20 +72,45 @@ class MainActivity : ComponentActivity() {
 
                     // 🔧 Ruta para editar predio
                     composable(
-                        route = "predio_detail/{id}",
-                        arguments = listOf(navArgument("id") { type = NavType.StringType })
+                        route = "predio_detail/{id}?codigoOrip={codigoOrip}&matricula={matricula}&areaTerreno={areaTerreno}&tipo={tipo}&condicion={condicion}&destino={destino}&areaRegistral={areaRegistral}",
+                        arguments = listOf(
+                            navArgument("id") { type = NavType.StringType },
+                            navArgument("codigoOrip") { type = NavType.StringType; defaultValue = "" },
+                            navArgument("matricula") { type = NavType.StringType; defaultValue = "" },
+                            navArgument("areaTerreno") { type = NavType.StringType; defaultValue = "" },
+                            navArgument("tipo") { type = NavType.StringType; defaultValue = "" },
+                            navArgument("condicion") { type = NavType.StringType; defaultValue = "" },
+                            navArgument("destino") { type = NavType.StringType; defaultValue = "" },
+                            navArgument("areaRegistral") { type = NavType.StringType; defaultValue = "" }
+                        )
                     ) { backStackEntry ->
-                        val id = backStackEntry.arguments?.getString("id") ?: ""
-                        com.coplanin.terrainfo.ui.predio.PredioEditScreen(id, navController)
+                        val args = backStackEntry.arguments!!
+                        PredioEditScreen(
+                            id = args.getString("id") ?: "",
+                            codigoOrip = args.getString("codigoOrip") ?: "",
+                            matricula = args.getString("matricula") ?: "",
+                            areaTerreno = args.getString("areaTerreno") ?: "",
+                            tipo = args.getString("tipo") ?: "",
+                            condicion = args.getString("condicion") ?: "",
+                            destino = args.getString("destino") ?: "",
+                            areaRegistral = args.getString("areaRegistral") ?: "",
+                            navController = navController
+                        )
                     }
 
-                    // 🔧 Ruta para editar terreno
                     composable(
-                        route = "terreno_detail/{id}",
-                        arguments = listOf(navArgument("id") { type = NavType.StringType })
+                        route = "terreno_detail/{id}?etiqueta={etiqueta}",
+                        arguments = listOf(
+                            navArgument("id") { type = NavType.StringType },
+                            navArgument("etiqueta") { type = NavType.StringType; defaultValue = "" }
+                        )
                     ) { backStackEntry ->
-                        val id = backStackEntry.arguments?.getString("id") ?: ""
-                        com.coplanin.terrainfo.ui.terreno.TerrenoEditScreen(id, navController)
+                        val args = backStackEntry.arguments!!
+                        TerrenoEditScreen(
+                            id = args.getString("id") ?: "",
+                            etiqueta = args.getString("etiqueta") ?: "",
+                            navController = navController
+                        )
                     }
 
                 }

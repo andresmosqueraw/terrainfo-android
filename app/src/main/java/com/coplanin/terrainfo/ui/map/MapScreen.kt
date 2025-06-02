@@ -103,7 +103,7 @@ fun MapScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(400.dp)
-                        .padding(horizontal = 16.dp)
+                        .padding(start = 16.dp, end = 32.dp, bottom = 32.dp)
                         .verticalScroll(rememberScrollState()) // Habilitar scroll
                 ) {
                     LazyColumn(

@@ -74,7 +74,7 @@ fun PredioEditScreen(
         Column(
             modifier = Modifier
                 .padding(inner)
-                .padding(16.dp)
+                .padding(horizontal = 32.dp, vertical = 16.dp)
                 .verticalScroll(rememberScrollState())
         ) {
             EditFieldCard(label = "Código ORIP", value = codigoOripState, onValueChange = { codigoOripState = it })

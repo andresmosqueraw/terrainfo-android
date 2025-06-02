@@ -53,7 +53,7 @@ fun TerrenoEditScreen(
         Column(
             modifier = Modifier
                 .padding(inner)
-                .padding(16.dp)
+                .padding(horizontal = 32.dp, vertical = 16.dp)
                 .verticalScroll(rememberScrollState())
         ) {
             EditFieldCard(label = "Etiqueta", value = etiquetaState, onValueChange = { etiquetaState = it })

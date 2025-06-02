@@ -8,5 +8,6 @@ data class PredioEntity(
     val tipo: String?,
     val condicion: String?,
     val destino: String?,
-    val areaRegistral: String?
+    val areaRegistral: String?,
+    val tipoReferenciaFmiAntiguo: String?
 )

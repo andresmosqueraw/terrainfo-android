@@ -42,6 +42,7 @@ fun PredioEditScreen(
     condicion: String,
     destino: String,
     areaRegistral: String,
+    tipoReferenciaFmiAntiguo: String,
     navController: NavController,
     viewModel: PredioViewModel = hiltViewModel()
 ) {
@@ -53,6 +54,7 @@ fun PredioEditScreen(
     var condicionState by remember { mutableStateOf(condicion) }
     var destinoState by remember { mutableStateOf(destino) }
     var areaRegistralState by remember { mutableStateOf(areaRegistral) }
+    var tipoReferenciaFmiAntiguoState by remember { mutableStateOf(tipoReferenciaFmiAntiguo) }
 
     // Si estás usando Compose y necesitas un Context
     val context = LocalContext.current
@@ -90,6 +92,7 @@ fun PredioEditScreen(
             DropdownFieldCard(label = "Condición Predio", options = listOf("NPH", "Propio"), selected = condicionState, onSelectedChange = { condicionState = it })
             DropdownFieldCard(label = "Destino Económico", options = listOf("Residencial", "Comercial"), selected = destinoState, onSelectedChange = { destinoState = it })
             EditFieldCard(label = "Área Registral m²", value = areaRegistralState, onValueChange = { areaRegistralState = it })
+            EditFieldCard(label = "Tipo Referencia FMI Antiguo", value = tipoReferenciaFmiAntiguoState, onValueChange = { tipoReferenciaFmiAntiguoState = it })
 
             Spacer(Modifier.height(24.dp))
 
@@ -103,7 +106,8 @@ fun PredioEditScreen(
                         tipo = tipoState,
                         condicion = condicionState,
                         destino = destinoState,
-                        areaRegistral = areaRegistralState
+                        areaRegistral = areaRegistralState,
+                        tipoReferenciaFmiAntiguo = tipoReferenciaFmiAntiguoState
                     )
                     viewModel.updatePredio(id, updatedPredio)
                     viewModel.getPredioAndTerrain(context, id) // Forzar recarga

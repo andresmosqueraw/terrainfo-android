@@ -110,6 +110,7 @@ private fun PredioContent(
             Detail("Condición Predio", predio.condicion)
             Detail("Destino Económico", predio.destino)
             Detail("Área Registral m²", predio.areaRegistral)
+            Detail("Tipo Referencia FMI Antiguo", predio.tipoReferenciaFmiAntiguo)
         }
 
         Spacer(Modifier.height(24.dp))
@@ -125,6 +126,7 @@ private fun PredioContent(
         ) {
             Detail("Id Operación Predio", terreno?.idOperacionPredio)
             Detail("Etiqueta", terreno?.etiqueta)
+            Detail("ILC Predio", terreno?.ilcPredio)
         }
     }
 }

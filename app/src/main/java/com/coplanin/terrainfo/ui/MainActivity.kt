@@ -97,6 +97,7 @@ class MainActivity : ComponentActivity() {
                             condicion = backStackEntry.arguments?.getString("condicion") ?: "",
                             destino = backStackEntry.arguments?.getString("destino") ?: "",
                             areaRegistral = backStackEntry.arguments?.getString("areaRegistral") ?: "",
+                            tipoReferenciaFmiAntiguo = backStackEntry.arguments?.getString("tipoReferenciaFmiAntiguo") ?: "",
                             navController = navController
                         )
                     }
@@ -111,6 +112,7 @@ class MainActivity : ComponentActivity() {
                         TerrenoEditScreen(
                             id = backStackEntry.arguments?.getString("id") ?: "",
                             etiqueta = backStackEntry.arguments?.getString("etiqueta") ?: "",
+                            ilcPredio = backStackEntry.arguments?.getString("ilcPredio") ?: "",
                             navController = navController
                         )
                     }

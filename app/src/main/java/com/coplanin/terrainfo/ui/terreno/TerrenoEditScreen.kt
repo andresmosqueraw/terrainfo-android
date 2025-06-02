@@ -26,11 +26,13 @@ import com.coplanin.terrainfo.ui.predio.PredioViewModel
 fun TerrenoEditScreen(
     id: String,
     etiqueta: String,
+    ilcPredio: String,
     navController: NavController,
     viewModel: PredioViewModel = hiltViewModel()
 ) {
     // Estado local para el campo
     var etiquetaState by remember { mutableStateOf(etiqueta) }
+    var ilcPredioState by remember { mutableStateOf(ilcPredio) }
 
     // Asegurarse de que el GeoPackage esté abierto al cargar la pantalla
     val context = LocalContext.current
@@ -57,6 +59,7 @@ fun TerrenoEditScreen(
                 .verticalScroll(rememberScrollState())
         ) {
             EditFieldCard(label = "Etiqueta", value = etiquetaState, onValueChange = { etiquetaState = it })
+            EditFieldCard(label = "ILC Predio", value = ilcPredioState, onValueChange = { ilcPredioState = it })
 
             Spacer(Modifier.height(24.dp))
 
@@ -64,7 +67,8 @@ fun TerrenoEditScreen(
                 onClick = {
                     val updatedTerreno = TerrainEntity(
                         idOperacionPredio = id,
-                        etiqueta = etiquetaState
+                        etiqueta = etiquetaState,
+                        ilcPredio = ilcPredioState
                     )
                     viewModel.updateTerreno(id, updatedTerreno)
                     navController.navigateUp()

@@ -86,6 +86,7 @@ class PredioViewModel @Inject constructor() : ViewModel() {
                     row.setValue("condicion_predio", updatedPredio.condicion)
                     row.setValue("destinacion_economica", updatedPredio.destino)
                     row.setValue("area_registral_m2", updatedPredio.areaRegistral)
+                    row.setValue("tipo_referencia_fmi_antiguo", updatedPredio.tipoReferenciaFmiAntiguo)
                     dao.update(row)
                     Log.d(TAG, "✅ Predio actualizado: $updatedPredio")
                     found = true
@@ -138,7 +139,8 @@ class PredioViewModel @Inject constructor() : ViewModel() {
                         tipo = row.getValue("tipo")?.toString(),
                         condicion = row.getValue("condicion_predio")?.toString(),
                         destino = row.getValue("destinacion_economica")?.toString(),
-                        areaRegistral = row.getValue("area_registral_m2")?.toString()
+                        areaRegistral = row.getValue("area_registral_m2")?.toString(),
+                        tipoReferenciaFmiAntiguo = row.getValue("tipo_referencia_fmi_antiguo")?.toString()
                     )
                     Log.d(TAG, "🎯 Predio encontrado: $entity")
                     return entity to tId
@@ -165,7 +167,8 @@ class PredioViewModel @Inject constructor() : ViewModel() {
                 if (fk == tId) {
                     val terreno = TerrainEntity(
                         idOperacionPredio = row.getValue("id_operacion_predio")?.toString(),
-                        etiqueta = row.getValue("etiqueta")?.toString()
+                        etiqueta = row.getValue("etiqueta")?.toString(),
+                        ilcPredio = row.getValue("ilc_predio")?.toString()
                     )
                     Log.d(TAG, "🎯 Terreno encontrado: $terreno")
                     return terreno

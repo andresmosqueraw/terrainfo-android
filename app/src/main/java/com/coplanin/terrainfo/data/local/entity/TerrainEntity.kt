@@ -6,5 +6,6 @@ package com.coplanin.terrainfo.data.local.entity
  */
 data class TerrainEntity(
     val idOperacionPredio: String?,   // columna id_operacion_predio
-    val etiqueta: String?             // columna etiqueta
+    val etiqueta: String?,             // columna etiqueta
+    val ilcPredio: String?
 )

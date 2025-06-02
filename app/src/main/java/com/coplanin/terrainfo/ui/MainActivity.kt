@@ -103,10 +103,11 @@ class MainActivity : ComponentActivity() {
                     }
 
                     composable(
-                        "terreno_detail/{id}?etiqueta={etiqueta}",
+                        "terreno_detail/{id}?etiqueta={etiqueta}&ilcPredio={ilcPredio}",
                         arguments = listOf(
                             navArgument("id") { type = NavType.StringType },
-                            navArgument("etiqueta") { type = NavType.StringType; defaultValue = "" }
+                            navArgument("etiqueta") { type = NavType.StringType; defaultValue = "" },
+                            navArgument("ilcPredio") { type = NavType.StringType; defaultValue = "" }
                         )
                     ) { backStackEntry ->
                         TerrenoEditScreen(

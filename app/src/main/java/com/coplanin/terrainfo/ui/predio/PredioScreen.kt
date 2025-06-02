@@ -120,7 +120,7 @@ private fun PredioContent(
             title = "Terreno",
             onEditClick = {
                 terreno?.let {
-                    navController.navigate("terreno_detail/${it.idOperacionPredio}?etiqueta=${it.etiqueta}")
+                    navController.navigate("terreno_detail/${it.idOperacionPredio}?etiqueta=${it.etiqueta}&ilcPredio=${it.ilcPredio}")
                 }
             }
         ) {

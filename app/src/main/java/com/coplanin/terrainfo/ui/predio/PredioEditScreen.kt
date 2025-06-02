@@ -109,7 +109,7 @@ fun PredioEditScreen(
                         areaRegistral = areaRegistralState,
                         tipoReferenciaFmiAntiguo = tipoReferenciaFmiAntiguoState
                     )
-                    viewModel.updatePredio(id, updatedPredio)
+                    viewModel.updatePredio(context, id, updatedPredio)
                     viewModel.getPredioAndTerrain(context, id) // Forzar recarga
                     navController.navigateUp()
                 },

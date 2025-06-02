@@ -17,111 +17,116 @@ import java.io.File
 @HiltViewModel
 class PredioViewModel @Inject constructor() : ViewModel() {
 
+    private var geoPackage: GeoPackage? = null
+    private val geoPackageLock = Any()
+    private var context: Context? = null
+
+    init {
+        Log.d(TAG, "🚀 Inicializando PredioViewModel")
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        Log.d(TAG, "🧹 Limpiando PredioViewModel")
+        closeGeoPackage()
+    }
+
     /**  🔑 Punto de entrada desde la UI  */
     fun getPredioAndTerrain(
         context: Context,
         idOperacion: String
     ): Flow<Pair<PredioEntity, TerrainEntity?>?> = flow {
+        Log.d(TAG, "🚀 Iniciando getPredioAndTerrain(idOperacion=$idOperacion)")
+        this@PredioViewModel.context = context
 
-        Log.d(TAG, "🚀 getPredioAndTerrain(idOperacion=$idOperacion)")
+        try {
+            // --- 1. Abrir GeoPackage -----------------------------
+            Log.d(TAG, "📦 Abriendo GeoPackage...")
+            val gpkg = ensureGeoPackageOpen() ?: run {
+                Log.e(TAG, "❌ No se pudo abrir GeoPackage")
+                emit(null)
+                return@flow
+            }
+            Log.d(TAG, "✅ GeoPackage abierto correctamente")
 
-        // --- 1. Abrir GeoPackage -----------------------------
-        val gpkg = openGeoPackage(context) ?: run {
-            emit(null);  return@flow
+            // --- 2. Cargar Predio (ilc_predio) -------------------
+            Log.d(TAG, "🔍 Buscando predio con id_operacion=$idOperacion")
+            val (predio, tId) = loadPredio(gpkg, idOperacion) ?: run {
+                Log.w(TAG, "❌ id_operacion=$idOperacion NO existe en ilc_predio")
+                emit(null)
+                return@flow
+            }
+            Log.d(TAG, "✅ Predio encontrado: $predio (T_Id=$tId)")
+
+            // --- 3. Cargar Terreno (cr_terreno) ------------------
+            Log.d(TAG, "🔍 Buscando terreno con T_Id=$tId")
+            val terreno = loadTerrain(gpkg, tId)
+            Log.d(TAG, "✅ Terreno encontrado: $terreno")
+
+            // --- 4. Emitir resultado ------------------------------
+            Log.d(TAG, "📤 Emitiendo resultado: predio=$predio  terreno=$terreno")
+            emit(predio to terreno)
+
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ Error en getPredioAndTerrain", e)
+            emit(null)
         }
-
-        // --- 2. Cargar Predio (ilc_predio) -------------------
-        val (predio, tId) = loadPredio(gpkg, idOperacion) ?: run {
-            Log.w(TAG, "❌ id_operacion=$idOperacion NO existe en ilc_predio")
-            gpkg.close(); emit(null); return@flow
-        }
-
-        // --- 3. Cargar Terreno (cr_terreno) ------------------
-        val terreno = loadTerrain(gpkg, tId)
-
-        // --- 4. Cerrar y emitir ------------------------------
-        gpkg.close()
-        Log.d(TAG, "✅ Emitiendo resultado: predio=$predio  terreno=$terreno")
-        emit(predio to terreno)
     }
 
     /* ---------- helpers privados ---------- */
-    private var geoPackage: GeoPackage? = null
+    fun openGeoPackage(context: Context): GeoPackage? {
+        this.context = context
+        return ensureGeoPackageOpen()
+    }
+
+    private fun ensureGeoPackageOpen(): GeoPackage? {
+        synchronized(geoPackageLock) {
+            if (geoPackage != null) {
+                Log.d(TAG, "📦 GeoPackage ya está abierto, reutilizando instancia")
+                return geoPackage
+            }
+
+            val ctx = context ?: run {
+                Log.e(TAG, "❌ Context no disponible para abrir GeoPackage")
+                return null
+            }
+
+            Log.d(TAG, "🔒 Intentando abrir GeoPackage...")
+            val file = copyAssetToFile(ctx, "modelo_col_smart_vc.gpkg")
+            Log.d(TAG, "📁 Verificando archivo en ${file.absolutePath}")
+            if (!file.exists()) {
+                Log.e(TAG, "❌ Archivo GeoPackage no encontrado en ${file.absolutePath}")
+                return null
+            }
+            Log.d(TAG, "✅ Archivo GeoPackage encontrado")
+
+            Log.d(TAG, "🔄 Abriendo GeoPackage...")
+            geoPackage = GeoPackageFactory.getManager(ctx)
+                .openExternal(File(file.absolutePath))
+
+            if (geoPackage == null) {
+                Log.e(TAG, "❌ No se pudo abrir GeoPackage")
+            } else {
+                Log.d(TAG, "📦 GeoPackage abierto correctamente")
+                Log.d(TAG, "📊 Tablas disponibles: ${geoPackage?.tables?.joinToString()}")
+            }
+            return geoPackage
+        }
+    }
 
     fun closeGeoPackage() {
-        geoPackage?.close()
-        geoPackage = null
-    }
-
-    fun openGeoPackage(context: Context): GeoPackage? {
-        val file = copyAssetToFile(context, "modelo_col_smart_vc.gpkg")
-        Log.d(TAG, "📁 Verificando archivo en ${file.absolutePath}")
-        if (!file.exists()) {
-            Log.e(TAG, "❌ Archivo GeoPackage no encontrado en ${file.absolutePath}")
-            return null
+        synchronized(geoPackageLock) {
+            Log.d(TAG, "🔒 Cerrando GeoPackage...")
+            geoPackage?.close()
+            geoPackage = null
+            Log.d(TAG, "✅ GeoPackage cerrado y referencia limpiada")
         }
-        val gpkg = GeoPackageFactory.getManager(context)
-            .openExternal(File(file.absolutePath))
-
-        if (gpkg == null) Log.e(TAG, "❌ No se pudo abrir GeoPackage")
-        else Log.d(TAG, "📦 GeoPackage abierto correctamente")
-        return gpkg
-    }
-
-    fun updatePredio(id: String, updatedPredio: PredioEntity) {
-        val dao = geoPackage?.getFeatureDao("ilc_predio") ?: run {
-            Log.e(TAG, "❌ DAO para 'ilc_predio' no disponible")
-            return
-        }
-        var found = false
-        dao.queryForAll().use { cursor ->
-            while (cursor.moveToNext()) {
-                val row = cursor.row
-                Log.d(TAG, "🔍 Procesando fila con numero_predial_nacional=${row.getValue("numero_predial_nacional")}")
-                if (row.getValue("numero_predial_nacional")?.toString() == id) {
-                    row.setValue("codigo_orip", updatedPredio.codigoOrip)
-                    row.setValue("matricula_inmobiliaria", updatedPredio.matricula)
-                    row.setValue("area_catastral_terreno", updatedPredio.areaTerreno)
-                    row.setValue("tipo", updatedPredio.tipo)
-                    row.setValue("condicion_predio", updatedPredio.condicion)
-                    row.setValue("destinacion_economica", updatedPredio.destino)
-                    row.setValue("area_registral_m2", updatedPredio.areaRegistral)
-                    row.setValue("tipo_referencia_fmi_antiguo", updatedPredio.tipoReferenciaFmiAntiguo)
-                    dao.update(row)
-                    Log.d(TAG, "✅ Predio actualizado: $updatedPredio")
-                    found = true
-                    break
-                }
-            }
-        }
-        if (!found) Log.w(TAG, "⚠️ No se encontró el predio con numero_predial_nacional=$id")
-    }
-
-    fun updateTerreno(id: String, updatedTerreno: TerrainEntity) {
-        val dao = geoPackage?.getFeatureDao("cr_terreno") ?: run {
-            Log.e(TAG, "❌ DAO para 'cr_terreno' no disponible")
-            return
-        }
-        var found = false
-        dao.queryForAll().use { cursor ->
-            while (cursor.moveToNext()) {
-                val row = cursor.row
-                Log.d(TAG, "🔍 Procesando fila con id_operacion_predio=${row.getValue("id_operacion_predio")}")
-                if (row.getValue("id_operacion_predio")?.toString() == id) {
-                    row.setValue("etiqueta", updatedTerreno.etiqueta)
-                    dao.update(row)
-                    Log.d(TAG, "✅ Terreno actualizado: $updatedTerreno")
-                    found = true
-                    break
-                }
-            }
-        }
-        if (!found) Log.w(TAG, "⚠️ No se encontró el terreno con id_operacion_predio=$id")
     }
 
     private fun loadPredio(gpkg: GeoPackage, idOperacion: String): Pair<PredioEntity, Int>? {
+        Log.d(TAG, "🔍 Iniciando loadPredio(idOperacion=$idOperacion)")
         val dao = gpkg.getFeatureDao("ilc_predio")
-        Log.d(TAG, "🗂 ilc_predio rows=${dao.count()}")
+        Log.d(TAG, "📊 Total de registros en ilc_predio: ${dao.count()}")
 
         dao.queryForAll().use { c ->
             while (c.moveToNext()) {
@@ -151,12 +156,10 @@ class PredioViewModel @Inject constructor() : ViewModel() {
         return null
     }
 
-    /**
-     * Busca en cr_terreno donde ilc_predio == tId.
-     */
     private fun loadTerrain(gpkg: GeoPackage, tId: Int): TerrainEntity? {
+        Log.d(TAG, "🔍 Iniciando loadTerrain(tId=$tId)")
         val dao = gpkg.getFeatureDao("cr_terreno")
-        Log.d(TAG, "🗂 cr_terreno rows=${dao.count()} (buscando ilc_predio=$tId)")
+        Log.d(TAG, "📊 Total de registros en cr_terreno: ${dao.count()}")
 
         dao.queryForAll().use { c ->
             while (c.moveToNext()) {
@@ -179,5 +182,129 @@ class PredioViewModel @Inject constructor() : ViewModel() {
         return null
     }
 
-    companion object { private const val TAG = "PredioVM" }
+    fun updatePredio(context: Context, id: String, updatedPredio: PredioEntity) {
+        Log.d(TAG, "🔄 Iniciando updatePredio(id=$id)")
+        this.context = context
+        synchronized(geoPackageLock) {
+            val gpkg = ensureGeoPackageOpen() ?: run {
+                Log.e(TAG, "❌ No se pudo abrir GeoPackage para actualizar")
+                return
+            }
+
+            val dao = gpkg.getFeatureDao("ilc_predio") ?: run {
+                Log.e(TAG, "❌ DAO para 'ilc_predio' no disponible")
+                return
+            }
+            Log.d(TAG, "📊 Total de registros en ilc_predio: ${dao.count()}")
+
+            var found = false
+            dao.queryForAll().use { cursor ->
+                while (cursor.moveToNext()) {
+                    val row = cursor.row
+                    val numPredial = row.getValue("numero_predial_nacional")?.toString()
+                    Log.d(TAG, "🔍 Procesando fila con numero_predial_nacional=$numPredial")
+                    
+                    if (numPredial == id) {
+                        Log.d(TAG, "📝 Actualizando campos del predio...")
+                        row.setValue("codigo_orip", updatedPredio.codigoOrip)
+                        val matriculaLong = updatedPredio.matricula?.toLongOrNull()
+                        if (matriculaLong != null) {
+                            row.setValue("matricula_inmobiliaria", matriculaLong)
+                        } else {
+                            Log.w(TAG, "⚠️ No se pudo convertir matricula a Long: ${updatedPredio.matricula}")
+                        }
+                        val areaDouble = updatedPredio.areaTerreno?.toDoubleOrNull()
+                        if (areaDouble != null) {
+                            row.setValue("area_catastral_terreno", areaDouble)
+                        } else {
+                            Log.w(TAG, "⚠️ No se pudo convertir area_catastral_terreno a Double: ${updatedPredio.areaTerreno}")
+                        }
+                        val tipoLong = updatedPredio.tipo?.toLongOrNull()
+                        if (tipoLong != null) {
+                            row.setValue("tipo", tipoLong)
+                        } else {
+                            Log.w(TAG, "⚠️ No se pudo convertir tipo a Long: ${updatedPredio.tipo}")
+                        }
+                        val condicionLong = updatedPredio.condicion?.toLongOrNull()
+                        if (condicionLong != null) {
+                            row.setValue("condicion_predio", condicionLong)
+                        } else {
+                            Log.w(TAG, "⚠️ No se pudo convertir condicion_predio a Long: ${updatedPredio.condicion}")
+                        }
+                        val destinoLong = updatedPredio.destino?.toLongOrNull()
+                        if (destinoLong != null) {
+                            row.setValue("destinacion_economica", destinoLong)
+                        } else {
+                            Log.w(TAG, "⚠️ No se pudo convertir destinacion_economica a Long: ${updatedPredio.destino}")
+                        }
+                        val areaRegistralDouble = updatedPredio.areaRegistral?.toDoubleOrNull()
+                        if (areaRegistralDouble != null) {
+                            row.setValue("area_registral_m2", areaRegistralDouble)
+                        } else {
+                            Log.w(TAG, "⚠️ No se pudo convertir area_registral_m2 a Double: ${updatedPredio.areaRegistral}")
+                        }
+                        val tipoRefLong = updatedPredio.tipoReferenciaFmiAntiguo?.toLongOrNull()
+                        if (tipoRefLong != null) {
+                            row.setValue("tipo_referencia_fmi_antiguo", tipoRefLong)
+                        } else {
+                            Log.w(TAG, "⚠️ No se pudo convertir tipo_referencia_fmi_antiguo a Long: ${updatedPredio.tipoReferenciaFmiAntiguo}")
+                        }
+                        
+                        val updated = dao.update(row)
+                        Log.d(TAG, "✅ Predio actualizado: $updatedPredio (filas afectadas: $updated)")
+                        found = true
+                        break
+                    }
+                }
+            }
+            if (!found) Log.w(TAG, "⚠️ No se encontró el predio con numero_predial_nacional=$id")
+        }
+    }
+
+    fun updateTerreno(context: Context, id: String, updatedTerreno: TerrainEntity) {
+        Log.d(TAG, "🔄 Iniciando updateTerreno(id=$id)")
+        this.context = context
+        synchronized(geoPackageLock) {
+            val gpkg = ensureGeoPackageOpen() ?: run {
+                Log.e(TAG, "❌ No se pudo abrir GeoPackage para actualizar")
+                return
+            }
+
+            val dao = gpkg.getFeatureDao("cr_terreno") ?: run {
+                Log.e(TAG, "❌ DAO para 'cr_terreno' no disponible")
+                return
+            }
+            Log.d(TAG, "📊 Total de registros en cr_terreno: ${dao.count()}")
+
+            var found = false
+            dao.queryForAll().use { cursor ->
+                while (cursor.moveToNext()) {
+                    val row = cursor.row
+                    val idOp = row.getValue("id_operacion_predio")?.toString()
+                    Log.d(TAG, "🔍 Procesando fila con id_operacion_predio=$idOp")
+                    
+                    if (idOp == id) {
+                        Log.d(TAG, "📝 Actualizando campos del terreno...")
+                        row.setValue("etiqueta", updatedTerreno.etiqueta)
+                        val ilcPredioLong = updatedTerreno.ilcPredio?.toLongOrNull()
+                        if (ilcPredioLong != null) {
+                            row.setValue("ilc_predio", ilcPredioLong)
+                        } else {
+                            Log.w(TAG, "⚠️ No se pudo convertir ilc_predio a Long: ${updatedTerreno.ilcPredio}")
+                        }
+                        
+                        val updated = dao.update(row)
+                        Log.d(TAG, "✅ Terreno actualizado: $updatedTerreno (filas afectadas: $updated)")
+                        found = true
+                        break
+                    }
+                }
+            }
+            if (!found) Log.w(TAG, "⚠️ No se encontró el terreno con id_operacion_predio=$id")
+        }
+    }
+
+    companion object { 
+        private const val TAG = "PredioVM" 
+    }
 }

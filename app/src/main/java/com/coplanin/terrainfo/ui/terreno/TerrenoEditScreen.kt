@@ -70,7 +70,7 @@ fun TerrenoEditScreen(
                         etiqueta = etiquetaState,
                         ilcPredio = ilcPredioState
                     )
-                    viewModel.updateTerreno(id, updatedTerreno)
+                    viewModel.updateTerreno(context, id, updatedTerreno)
                     navController.navigateUp()
                 },
                 modifier = Modifier.fillMaxWidth(),

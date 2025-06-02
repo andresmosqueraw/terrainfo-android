@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
@@ -21,6 +22,7 @@ import androidx.navigation.NavController
 import com.coplanin.terrainfo.R
 import com.coplanin.terrainfo.data.local.entity.CommonDataEntity
 import com.coplanin.terrainfo.ui.icons.ArrowBack
+import com.coplanin.terrainfo.ui.icons.Plus
 import com.coplanin.terrainfo.ui.icons.SearchIcon
 import com.coplanin.terrainfo.ui.icons.User
 import com.mapbox.maps.Style
@@ -462,12 +464,13 @@ fun MapScreen(
             FloatingActionButton(
                 onClick = { /* TODO: acción al presionar el + */ },
                 containerColor = Color(0xFF0D47A1),
+                shape = CircleShape, // Forma redonda
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
-                    .padding(24.dp)          // margen respecto a bordes
+                    .padding(24.dp) // margen respecto a bordes
             ) {
                 Icon(
-                    imageVector = ArrowBack,
+                    imageVector = Plus,
                     contentDescription = "Agregar",
                     tint = Color.White
                 )

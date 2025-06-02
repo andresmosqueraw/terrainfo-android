@@ -539,3 +539,38 @@ public val Trash: ImageVector
 
 private var _trash: ImageVector? = null
 
+public val Plus: ImageVector
+    get() {
+        if (_plus != null) {
+            return _plus!!
+        }
+        _plus = ImageVector.Builder(
+            name = "Plus",
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
+            viewportWidth = 24f,
+            viewportHeight = 24f
+        ).apply {
+            path(
+                fill = null,
+                fillAlpha = 1.0f,
+                stroke = SolidColor(Color(0xFF0F172A)),
+                strokeAlpha = 1.0f,
+                strokeLineWidth = 1.5f,
+                strokeLineCap = StrokeCap.Round,
+                strokeLineJoin = StrokeJoin.Round,
+                strokeLineMiter = 1.0f,
+                pathFillType = PathFillType.NonZero
+            ) {
+                moveTo(12f, 4.5f)
+                verticalLineTo(19.5f)
+                moveTo(19.5f, 12f)
+                lineTo(4.5f, 12f)
+            }
+        }.build()
+        return _plus!!
+    }
+
+private var _plus: ImageVector? = null
+
+

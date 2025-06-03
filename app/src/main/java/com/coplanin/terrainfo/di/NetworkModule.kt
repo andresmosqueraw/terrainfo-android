@@ -1,5 +1,7 @@
 package com.coplanin.terrainfo.di
 
+import com.coplanin.terrainfo.data.repository.AuthService
+import com.coplanin.terrainfo.data.repository.CommonDataService
 import com.coplanin.terrainfo.data.utils.GsonUtils
 import dagger.Module
 import dagger.Provides
@@ -14,6 +16,12 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
+
+    @Provides @Singleton
+    fun provideLoggingInterceptor(): HttpLoggingInterceptor =
+        HttpLoggingInterceptor().apply {
+            level = HttpLoggingInterceptor.Level.BODY
+        }
 
     @Provides @Singleton
     fun provideOkHttp(loggingInterceptor: HttpLoggingInterceptor): OkHttpClient =
@@ -35,4 +43,12 @@ object NetworkModule {
             .client(client)
             .addConverterFactory(GsonConverterFactory.create(GsonUtils.getGson()))
             .build()
+
+    @Provides @Singleton
+    fun provideAuthService(retrofit: Retrofit): AuthService =
+        retrofit.create(AuthService::class.java)
+
+    @Provides @Singleton
+    fun provideCommonDataService(retrofit: Retrofit): CommonDataService =
+        retrofit.create(CommonDataService::class.java)
 }

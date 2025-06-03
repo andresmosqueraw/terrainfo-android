@@ -1,8 +1,6 @@
 package com.coplanin.terrainfo.di
 
-import com.coplanin.terrainfo.data.repository.ApiClient
-import com.coplanin.terrainfo.data.repository.AuthService
-import com.coplanin.terrainfo.data.repository.CommonDataService
+import com.coplanin.terrainfo.data.utils.GsonUtils
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -18,22 +16,23 @@ import javax.inject.Singleton
 object NetworkModule {
 
     @Provides @Singleton
-    fun provideOkHttp() = OkHttpClient.Builder()
-        .addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY })
-        .build()
+    fun provideOkHttp(loggingInterceptor: HttpLoggingInterceptor): OkHttpClient =
+        OkHttpClient.Builder()
+            .addInterceptor(loggingInterceptor)
+            .addInterceptor { chain ->
+                val original = chain.request()
+                val newRequest = original.newBuilder()
+                    .header("Content-Type", "application/json")
+                    .build()
+                chain.proceed(newRequest)
+            }
+            .build()
 
     @Provides @Singleton
     fun provideRetrofit(client: OkHttpClient): Retrofit =
         Retrofit.Builder()
-            .baseUrl(ApiClient.BASE_URL)   // o constante aquí
+            .baseUrl(ConstantsModule.BASE_URL)
             .client(client)
-            .addConverterFactory(GsonConverterFactory.create())
+            .addConverterFactory(GsonConverterFactory.create(GsonUtils.getGson()))
             .build()
-
-    @Provides fun authService(retrofit: Retrofit): AuthService =
-        retrofit.create(AuthService::class.java)
-
-    @Provides
-    fun commonDataService(retrofit: Retrofit): CommonDataService =
-        retrofit.create(CommonDataService::class.java)
 }

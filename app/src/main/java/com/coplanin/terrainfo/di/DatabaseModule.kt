@@ -16,9 +16,12 @@ object DatabaseModule {
 
     @Provides @Singleton
     fun provideDb(@ApplicationContext ctx: Context): TerrainfoDb =
-        Room.databaseBuilder(ctx, TerrainfoDb::class.java, "terrainfo.db").build()
+        Room.databaseBuilder(ctx, TerrainfoDb::class.java, ConstantsModule.DATABASE_NAME)
+            .build()
 
-    @Provides fun userDao(db: TerrainfoDb) = db.userDao()
-    @Provides
+    @Provides @Singleton
+    fun userDao(db: TerrainfoDb) = db.userDao()
+
+    @Provides @Singleton
     fun commonDataDao(db: TerrainfoDb) = db.commonDataDao()
 }

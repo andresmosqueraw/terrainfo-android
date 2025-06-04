@@ -512,9 +512,6 @@ fun AddPropertyForm(
     onSave: () -> Unit
 ) {
     var idOperacion by remember { mutableStateOf("") }
-    var departamento by remember { mutableStateOf("") }
-    var municipio by remember { mutableStateOf("") }
-    var codigoOrip by remember { mutableStateOf("") }
     var matriculaInmobiliaria by remember { mutableStateOf("") }
     var numeroPredial by remember { mutableStateOf("") }
     var tipo by remember { mutableStateOf("Urbano") }
@@ -525,7 +522,7 @@ fun AddPropertyForm(
     var expandedDestino by remember { mutableStateOf(false) }
     var areaCatastral by remember { mutableStateOf("") }
     var areaRegistral by remember { mutableStateOf("") }
-    var direccion by remember { mutableStateOf("") }
+    var tipoReferenciaFmiAntiguo by remember { mutableStateOf("") }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -543,26 +540,8 @@ fun AddPropertyForm(
                     label = { Text("Id_Operacion") },
                     modifier = Modifier.fillMaxWidth()
                 )
-                OutlinedTextField(
-                    value = departamento,
-                    onValueChange = { departamento = it },
-                    label = { Text("Departamento") },
-                    modifier = Modifier.fillMaxWidth()
-                )
-                OutlinedTextField(
-                    value = municipio,
-                    onValueChange = { municipio = it },
-                    label = { Text("Municipio") },
-                    modifier = Modifier.fillMaxWidth()
-                )
                 Spacer(Modifier.height(8.dp))
                 Text("Información Registral", style = MaterialTheme.typography.titleMedium)
-                OutlinedTextField(
-                    value = codigoOrip,
-                    onValueChange = { codigoOrip = it },
-                    label = { Text("Codigo_ORIP") },
-                    modifier = Modifier.fillMaxWidth()
-                )
                 OutlinedTextField(
                     value = matriculaInmobiliaria,
                     onValueChange = { matriculaInmobiliaria = it },
@@ -683,12 +662,10 @@ fun AddPropertyForm(
                     suffix = { Text("m²") },
                     modifier = Modifier.fillMaxWidth()
                 )
-                Spacer(Modifier.height(8.dp))
-                Text("Dirección", style = MaterialTheme.typography.titleMedium)
                 OutlinedTextField(
-                    value = direccion,
-                    onValueChange = { direccion = it },
-                    label = { Text("Dirección") },
+                    value = tipoReferenciaFmiAntiguo,
+                    onValueChange = { tipoReferenciaFmiAntiguo = it },
+                    label = { Text("Tipo Referencia FMI Antiguo") },
                     modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(Modifier.height(8.dp))

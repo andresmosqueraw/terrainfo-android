@@ -36,13 +36,7 @@ import com.mapbox.maps.extension.compose.annotation.generated.PolygonAnnotation
 import com.mapbox.maps.extension.compose.annotation.generated.PolygonAnnotationState
 import com.mapbox.maps.extension.compose.style.MapStyle
 import com.mapbox.maps.extension.compose.annotation.generated.PolylineAnnotation
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -69,13 +63,24 @@ fun MapScreen(
     /* --- Centrar mapa cuando hay puntos --- */
     val viewportState = rememberMapViewportState {
         setCameraOptions {
-            zoom(12.0)
-            center(Point.fromLngLat(-74.182224, 4.611598)) // Bogotá
+            zoom(16.0)
+            center(Point.fromLngLat(-74.182224, 4.611598)) // Bogotá como posición inicial
         }
     }
 
-    var showAddPropertyForm by remember { mutableStateOf(false) }
-    var newPointLatLng by remember { mutableStateOf<LatLng?>(null) }
+    // Actualizar el viewport cuando los puntos estén disponibles
+    LaunchedEffect(points) {
+        if (points.isNotEmpty()) {
+            val firstPoint = points.first()
+            viewportState.setCameraOptions {
+                zoom(16.0)
+                center(Point.fromLngLat(firstPoint.latLng.longitude, firstPoint.latLng.latitude))
+            }
+        }
+    }
+
+    // var showAddPropertyForm by remember { mutableStateOf(false) }
+    // var newPointLatLng by remember { mutableStateOf<LatLng?>(null) }
 
     LaunchedEffect(selectedVisit) {
         scaffoldState.bottomSheetState.expand()

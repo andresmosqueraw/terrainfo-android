@@ -1,5 +1,6 @@
 package com.coplanin.terrainfo.ui.login
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -38,20 +39,29 @@ fun LoginScreen(
     loginViewModel: LoginViewModel,      // ❶ sin valor por defecto
     onLoginSuccess: () -> Unit = {}
 ) {
+    val TAG = "LoginScreen"
+    Log.d(TAG, "LoginScreen composable started")
+    
     val context = LocalContext.current
     val fusedClient = remember {
+        Log.d(TAG, "Initializing FusedLocationProviderClient")
         LocationServices.getFusedLocationProviderClient(context)
     }
 
     val locationPermission = rememberPermissionState(Manifest.permission.ACCESS_FINE_LOCATION)
+    Log.d(TAG, "Location permission status: ${locationPermission.status.isGranted}")
 
     val uiState = loginViewModel.uiState
     val municipios = listOf("CUITIVA", "IZA", "TRINIDAD")
     var expanded by remember { mutableStateOf(false) }
 
     uiState.errorMessage?.let { error ->
+        Log.e(TAG, "Showing error dialog: $error")
         AlertDialog(
-            onDismissRequest = { loginViewModel.clearErrorMessage() },
+            onDismissRequest = { 
+                Log.d(TAG, "Error dialog dismissed")
+                loginViewModel.clearErrorMessage() 
+            },
             confirmButton = {
                 TextButton(onClick = { loginViewModel.clearErrorMessage() }) {
                     Text("OK")
@@ -209,13 +219,18 @@ fun LoginScreen(
 
                 Button(
                     onClick = {
+                        Log.d(TAG, "Login button clicked")
                         if (locationPermission.status.isGranted) {
+                            Log.d(TAG, "Location permission granted, getting last location")
                             fusedClient.lastLocation.addOnSuccessListener { location ->
+                                Log.d(TAG, "Location obtained: ${location?.latitude}, ${location?.longitude}")
                                 loginViewModel.onLoginClicked(onLoginSuccess, location)
                             }.addOnFailureListener {
+                                Log.e(TAG, "Failed to get location", it)
                                 loginViewModel.onLoginClicked(onLoginSuccess, null)
                             }
                         } else {
+                            Log.d(TAG, "Location permission not granted, requesting permission")
                             locationPermission.launchPermissionRequest()
                         }
                     },
@@ -226,6 +241,7 @@ fun LoginScreen(
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     if (uiState.isLoading) {
+                        Log.d(TAG, "Showing loading indicator")
                         CircularProgressIndicator(color = Color.White)
                     } else {
                         Text("Ingresar", color = Color.White, fontSize = 18.sp)

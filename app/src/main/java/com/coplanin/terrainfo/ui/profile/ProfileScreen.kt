@@ -1,5 +1,6 @@
 package com.coplanin.terrainfo.ui.profile
 
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*              // unchanged
 import androidx.compose.runtime.*
@@ -18,14 +19,21 @@ fun ProfileScreen(
     navController: NavController,
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
+    val TAG = "ProfileScreen"
+    Log.d(TAG, "ProfileScreen composable started")
+    
     val user by viewModel.user.collectAsState()
+    Log.d(TAG, "User state collected: ${user != null}")
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("Perfil") },
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
+                    IconButton(onClick = { 
+                        Log.d(TAG, "Back button clicked")
+                        navController.popBackStack() 
+                    }) {
                         Icon(ArrowBack, contentDescription = "Volver")
                     }
                 }
@@ -33,6 +41,7 @@ fun ProfileScreen(
         }
     ) { innerPadding ->
         user?.let { u ->
+            Log.d(TAG, "Rendering user profile for: ${u.username}")
             Column(
                 Modifier
                     .fillMaxSize()
@@ -55,7 +64,9 @@ fun ProfileScreen(
                 // Botón de cerrar sesión
                 Button(
                     onClick = {
+                        Log.d(TAG, "Logout button clicked")
                         viewModel.logout()
+                        Log.d(TAG, "Navigating to login screen")
                         navController.navigate("login") {
                             popUpTo("profile") { inclusive = true }
                         }
@@ -65,6 +76,8 @@ fun ProfileScreen(
                     Text("Cerrar sesión", color = Color.White)
                 }
             }
+        } ?: run {
+            Log.w(TAG, "No user data available")
         }
     }
 }

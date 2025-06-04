@@ -304,6 +304,76 @@ class PredioViewModel @Inject constructor() : ViewModel() {
         }
     }
 
+    fun saveNewPredio(context: Context, predio: PredioEntity) {
+        Log.d(TAG, "🆕 Iniciando saveNewPredio")
+        this.context = context
+        synchronized(geoPackageLock) {
+            val gpkg = ensureGeoPackageOpen() ?: run {
+                Log.e(TAG, "❌ No se pudo abrir GeoPackage para guardar")
+                return
+            }
+
+            val dao = gpkg.getFeatureDao("ilc_predio") ?: run {
+                Log.e(TAG, "❌ DAO para 'ilc_predio' no disponible")
+                return
+            }
+            Log.d(TAG, "📊 Total de registros en ilc_predio: ${dao.count()}")
+
+            // Crear nueva fila
+            val row = dao.newRow()
+            
+            // Establecer valores
+            row.setValue("codigo_orip", predio.codigoOrip)
+            val matriculaLong = predio.matricula?.toLongOrNull()
+            if (matriculaLong != null) {
+                row.setValue("matricula_inmobiliaria", matriculaLong)
+            } else {
+                Log.w(TAG, "⚠️ No se pudo convertir matricula a Long: ${predio.matricula}")
+            }
+            val areaDouble = predio.areaTerreno?.toDoubleOrNull()
+            if (areaDouble != null) {
+                row.setValue("area_catastral_terreno", areaDouble)
+            } else {
+                Log.w(TAG, "⚠️ No se pudo convertir area_catastral_terreno a Double: ${predio.areaTerreno}")
+            }
+            row.setValue("numero_predial_nacional", predio.numeroPredial)
+            val tipoLong = predio.tipo?.toLongOrNull()
+            if (tipoLong != null) {
+                row.setValue("tipo", tipoLong)
+            } else {
+                Log.w(TAG, "⚠️ No se pudo convertir tipo a Long: ${predio.tipo}")
+            }
+            val condicionLong = predio.condicion?.toLongOrNull()
+            if (condicionLong != null) {
+                row.setValue("condicion_predio", condicionLong)
+            } else {
+                Log.w(TAG, "⚠️ No se pudo convertir condicion_predio a Long: ${predio.condicion}")
+            }
+            val destinoLong = predio.destino?.toLongOrNull()
+            if (destinoLong != null) {
+                row.setValue("destinacion_economica", destinoLong)
+            } else {
+                Log.w(TAG, "⚠️ No se pudo convertir destinacion_economica a Long: ${predio.destino}")
+            }
+            val areaRegistralDouble = predio.areaRegistral?.toDoubleOrNull()
+            if (areaRegistralDouble != null) {
+                row.setValue("area_registral_m2", areaRegistralDouble)
+            } else {
+                Log.w(TAG, "⚠️ No se pudo convertir area_registral_m2 a Double: ${predio.areaRegistral}")
+            }
+            val tipoRefLong = predio.tipoReferenciaFmiAntiguo?.toLongOrNull()
+            if (tipoRefLong != null) {
+                row.setValue("tipo_referencia_fmi_antiguo", tipoRefLong)
+            } else {
+                Log.w(TAG, "⚠️ No se pudo convertir tipo_referencia_fmi_antiguo a Long: ${predio.tipoReferenciaFmiAntiguo}")
+            }
+
+            // Insertar la nueva fila
+            val inserted = dao.insert(row)
+            Log.d(TAG, "✅ Nuevo predio guardado (filas afectadas: $inserted)")
+        }
+    }
+
     companion object { 
         private const val TAG = "PredioVM" 
     }

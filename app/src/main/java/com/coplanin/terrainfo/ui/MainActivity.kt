@@ -18,11 +18,13 @@ import android.content.SharedPreferences
 import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
+import com.coplanin.terrainfo.ui.predio.AddPredioScreen
 import com.coplanin.terrainfo.ui.predio.PredioEditScreen
 import com.coplanin.terrainfo.ui.predio.PredioScreen
 import com.coplanin.terrainfo.ui.predio.PredioViewModel
 import com.coplanin.terrainfo.ui.profile.ProfileScreen
 import com.coplanin.terrainfo.ui.terreno.TerrenoEditScreen
+import com.google.android.gms.maps.model.LatLng
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -114,6 +116,21 @@ class MainActivity : ComponentActivity() {
                             id = backStackEntry.arguments?.getString("id") ?: "",
                             etiqueta = backStackEntry.arguments?.getString("etiqueta") ?: "",
                             ilcPredio = backStackEntry.arguments?.getString("ilcPredio") ?: "",
+                            navController = navController
+                        )
+                    }
+
+                    composable(
+                        "add_predio?lat={lat}&lng={lng}",
+                        arguments = listOf(
+                            navArgument("lat") { type = NavType.FloatType },
+                            navArgument("lng") { type = NavType.FloatType }
+                        )
+                    ) { backStackEntry ->
+                        val lat = backStackEntry.arguments?.getFloat("lat") ?: 0f
+                        val lng = backStackEntry.arguments?.getFloat("lng") ?: 0f
+                        AddPredioScreen(
+                            latLng = LatLng(lat.toDouble(), lng.toDouble()),
                             navController = navController
                         )
                     }

@@ -33,6 +33,23 @@ class MapViewModel @Inject constructor(
     private val _points = MutableStateFlow<List<MapPoint>>(emptyList())
     val points: StateFlow<List<MapPoint>> = _points
 
+    private val _isAddingPoint = MutableStateFlow(false)
+    val isAddingPoint: StateFlow<Boolean> = _isAddingPoint
+
+    fun toggleAddPointMode() {
+        _isAddingPoint.value = !_isAddingPoint.value
+    }
+
+    fun addPoint(latLng: LatLng) {
+        val newPoint = MapPoint(
+            id = _points.value.size + 1,
+            title = "Nuevo punto ${_points.value.size + 1}",
+            latLng = latLng
+        )
+        _points.value = _points.value + newPoint
+        _isAddingPoint.value = false
+    }
+
     init {
         viewModelScope.launch(Dispatchers.IO) {
             val file = copyAssetToFile(context, "modelo_col_smart_vc.gpkg")

@@ -25,6 +25,7 @@ import com.coplanin.terrainfo.ui.icons.ArrowBack
 import com.coplanin.terrainfo.ui.icons.Plus
 import com.coplanin.terrainfo.ui.icons.SearchIcon
 import com.coplanin.terrainfo.ui.icons.User
+import com.google.android.gms.maps.model.LatLng
 import com.mapbox.maps.Style
 import com.mapbox.maps.extension.compose.MapboxMap
 import com.mapbox.maps.extension.compose.annotation.generated.PointAnnotation
@@ -47,6 +48,7 @@ fun MapScreen(
     val points by viewModel.points.collectAsState()
     val visits by viewModel.visits.collectAsState()
     val polygonPoints by viewModel.polygonPoints.collectAsState()
+    val isAddingPoint by viewModel.isAddingPoint.collectAsState()
 
     /* --- Hoja inferior y cámara --- */
     val scaffoldState = rememberBottomSheetScaffoldState()
@@ -350,10 +352,14 @@ fun MapScreen(
                 scaleBar = {},       // Oculta barra de escala
                 logo = {},           // Oculta logo Mapbox
                 attribution = {},    // Oculta atribución
-                style = { MapStyle(style = Style.LIGHT) }
+                style = { MapStyle(style = Style.LIGHT) },
+                onMapClickListener = if (isAddingPoint) { point ->
+                    viewModel.addPoint(LatLng(point.latitude(), point.longitude()))
+                    true
+                } else null
             ) {
                 val markerIcon = rememberIconImage(
-                    key = R.drawable.red_marker, // Asegúrate de tener un ícono válido en `res/drawable`
+                    key = R.drawable.red_marker,
                     painter = painterResource(R.drawable.red_marker)
                 )
 
@@ -383,10 +389,9 @@ fun MapScreen(
 
                 points.forEach { p ->
                     val geo = Point.fromLngLat(p.latLng.longitude, p.latLng.latitude)
-                    PointAnnotation(point = geo) {
-                        iconImage = markerIcon
-                        iconSize = 0.8
-                        interactionsState.onClicked {
+                    PointAnnotation(
+                        point = geo,
+                        onClick = { annotation ->
                             Log.d("MapScreen", "Punto clicado: ${p.title} (Lat: ${p.latLng.latitude}, Lng: ${p.latLng.longitude})")
 
                             // Busca el CommonDataEntity correspondiente
@@ -402,22 +407,11 @@ fun MapScreen(
                             selectedVisit = matchingVisit
                             true
                         }
+                    ) {
+                        iconImage = markerIcon
+                        iconSize = 0.8
                     }
                 }
-
-
-                /* points.forEach { p ->
-                    val point = Point.fromLngLat(p.latLng.longitude, p.latLng.latitude)
-                    PointAnnotation(point = point) {
-                        iconImage = markerIcon
-                        // textField = p.title
-                        interactionsState.onClicked {
-                            selectedVisit = visits.find { it.id == p.id }
-                            true
-                        }
-                    }
-                } */
-
             }
 
             /* ----- Barra de búsqueda flotante ----- */
@@ -462,18 +456,36 @@ fun MapScreen(
 
             /* ---------- FAB con ícono "+" ---------- */
             FloatingActionButton(
-                onClick = { /* TODO: acción al presionar el + */ },
-                containerColor = Color(0xFF0D47A1),
-                shape = CircleShape, // Forma redonda
+                onClick = { viewModel.toggleAddPointMode() },
+                containerColor = if (isAddingPoint) Color.Red else Color(0xFF0D47A1),
+                shape = CircleShape,
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
-                    .padding(24.dp) // margen respecto a bordes
+                    .padding(24.dp)
             ) {
                 Icon(
                     imageVector = Plus,
-                    contentDescription = "Agregar",
+                    contentDescription = if (isAddingPoint) "Cancelar" else "Agregar",
                     tint = Color.White
                 )
+            }
+
+            // Show a message when in add point mode
+            if (isAddingPoint) {
+                Surface(
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .padding(top = 100.dp),
+                    shape = RoundedCornerShape(8.dp),
+                    color = Color.White.copy(alpha = 0.9f),
+                    shadowElevation = 4.dp
+                ) {
+                    Text(
+                        text = "Toque en el mapa para agregar un punto",
+                        modifier = Modifier.padding(16.dp),
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
             }
         }
     }

@@ -5,7 +5,6 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.coplanin.terrainfo.data.local.entity.PredioEntity
 import com.coplanin.terrainfo.data.local.entity.TerrainEntity
-import com.coplanin.terrainfo.util.copyAssetToFile
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -13,6 +12,7 @@ import mil.nga.geopackage.GeoPackage
 import mil.nga.geopackage.GeoPackageFactory
 import javax.inject.Inject
 import java.io.File
+import java.io.FileOutputStream
 
 @HiltViewModel
 class PredioViewModel @Inject constructor() : ViewModel() {
@@ -379,4 +379,14 @@ class PredioViewModel @Inject constructor() : ViewModel() {
     companion object { 
         private const val TAG = "PredioVM" 
     }
+}
+
+fun copyAssetToFile(context: Context, assetName: String): File {
+    val outFile = File(context.filesDir, assetName)
+    if (!outFile.exists()) {
+        context.assets.open(assetName).use { input ->
+            FileOutputStream(outFile).use { output -> input.copyTo(output) }
+        }
+    }
+    return outFile
 }

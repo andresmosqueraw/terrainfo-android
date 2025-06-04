@@ -58,18 +58,18 @@ class LoginViewModel @Inject constructor(
             uiState = uiState.copy(isLoading = true, errorMessage = null)
 
             try {
-                Log.d(TAG, "Calling authRepo.login")
+                Log.d(TAG, "Calling authRepo.login with username: ${uiState.email}")
                 val token = authRepo.login(
                     username = uiState.email,
                     password = uiState.password,
                     municipio = uiState.municipio,
                     loc = location
                 )
-                Log.d(TAG, "Login successful, token received")
+                Log.d(TAG, "Login successful, token received (first 10 chars): ${token.take(10)}...")
                 
-                Log.d(TAG, "Starting sync process")
+                Log.d(TAG, "Starting sync process with token")
                 commonRepo.sync(uiState.email, token)
-                Log.d(TAG, "Sync completed")
+                Log.d(TAG, "Sync completed successfully")
                 
                 uiState = uiState.copy(isLoading = false)
                 Log.d(TAG, "Calling onLoginSuccess")

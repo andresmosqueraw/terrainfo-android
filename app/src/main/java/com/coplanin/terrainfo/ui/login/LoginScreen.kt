@@ -30,6 +30,11 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.android.gms.location.LocationServices
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
+import android.os.Build
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class,
     ExperimentalPermissionsApi::class
@@ -39,27 +44,78 @@ fun LoginScreen(
     loginViewModel: LoginViewModel,      // ❶ sin valor por defecto
     onLoginSuccess: () -> Unit = {}
 ) {
-    val TAG = "LoginScreen"
-    Log.d(TAG, "LoginScreen composable started")
-    
+    val tag = "LoginScreen"
+    Log.d(tag, "LoginScreen composable started")
+
     val context = LocalContext.current
-    val fusedClient = remember {
-        Log.d(TAG, "Initializing FusedLocationProviderClient")
-        LocationServices.getFusedLocationProviderClient(context)
-    }
 
     val locationPermission = rememberPermissionState(Manifest.permission.ACCESS_FINE_LOCATION)
-    Log.d(TAG, "Location permission status: ${locationPermission.status.isGranted}")
+    Log.d(tag, "Location permission status: ${locationPermission.status.isGranted}")
 
     val uiState = loginViewModel.uiState
     val municipios = listOf("CUITIVA", "IZA", "TRINIDAD")
     var expanded by remember { mutableStateOf(false) }
+    var showPermissionDialog by remember { mutableStateOf(false) }
+
+    // Verificar permisos necesarios
+    val requiredPermissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        arrayOf(
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+            Manifest.permission.READ_MEDIA_IMAGES,
+            Manifest.permission.READ_MEDIA_VIDEO,
+            Manifest.permission.READ_MEDIA_AUDIO
+        )
+    } else {
+        arrayOf(
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+        )
+    }
+
+    // Launcher para solicitar permisos
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val allGranted = permissions.entries.all { it.value }
+        Log.d(tag, "Permission result: allGranted=$allGranted, permissions=$permissions")
+        if (allGranted) {
+            // Todos los permisos concedidos, proceder con el login inmediatamente
+            Log.d(tag, "All permissions granted, proceeding with login")
+            loginViewModel.onLoginClicked(onLoginSuccess, null)
+        } else {
+            // Algunos permisos fueron denegados
+            Log.d(tag, "Some permissions were denied, showing dialog")
+            showPermissionDialog = true
+        }
+    }
+
+    // Función para verificar y solicitar permisos
+    fun checkAndRequestPermissions() {
+        Log.d(tag, "Checking permissions")
+        val permissionsToRequest = requiredPermissions.filter {
+            ContextCompat.checkSelfPermission(context, it) != PackageManager.PERMISSION_GRANTED
+        }.toTypedArray()
+
+        Log.d(tag, "Permissions to request: ${permissionsToRequest.joinToString()}")
+        if (permissionsToRequest.isEmpty()) {
+            // Ya tenemos todos los permisos, proceder con el login
+            Log.d(tag, "All permissions already granted, proceeding with login")
+            loginViewModel.onLoginClicked(onLoginSuccess, null)
+        } else {
+            // Solicitar permisos faltantes
+            Log.d(tag, "Requesting missing permissions")
+            permissionLauncher.launch(permissionsToRequest)
+        }
+    }
 
     uiState.errorMessage?.let { error ->
-        Log.e(TAG, "Showing error dialog: $error")
+        Log.e(tag, "Showing error dialog: $error")
         AlertDialog(
             onDismissRequest = { 
-                Log.d(TAG, "Error dialog dismissed")
+                Log.d(tag, "Error dialog dismissed")
                 loginViewModel.clearErrorMessage() 
             },
             confirmButton = {
@@ -69,6 +125,41 @@ fun LoginScreen(
             },
             title = { Text("Error") },
             text = { Text(error) }
+        )
+    }
+
+    // Diálogo para cuando se deniegan los permisos
+    if (showPermissionDialog) {
+        Log.d(tag, "Showing permission dialog")
+        AlertDialog(
+            onDismissRequest = { 
+                Log.d(tag, "Permission dialog dismissed")
+                showPermissionDialog = false 
+            },
+            title = { Text("Permisos necesarios") },
+            text = { Text("Esta aplicación necesita permisos de ubicación y almacenamiento para funcionar correctamente.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        Log.d(tag, "Request permissions again clicked")
+                        showPermissionDialog = false
+                        // Volver a solicitar los permisos
+                        permissionLauncher.launch(requiredPermissions)
+                    }
+                ) {
+                    Text("Solicitar de nuevo")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { 
+                        Log.d(tag, "Cancel permissions clicked")
+                        showPermissionDialog = false 
+                    }
+                ) {
+                    Text("Cancelar")
+                }
+            }
         )
     }
 
@@ -144,7 +235,7 @@ fun LoginScreen(
                             focusedLabelColor = Color.White
                         ),
                         modifier = Modifier
-                            .menuAnchor()
+                            .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryEditable)
                             .fillMaxWidth()
                     )
                     ExposedDropdownMenu(
@@ -219,20 +310,8 @@ fun LoginScreen(
 
                 Button(
                     onClick = {
-                        Log.d(TAG, "Login button clicked")
-                        if (locationPermission.status.isGranted) {
-                            Log.d(TAG, "Location permission granted, getting last location")
-                            fusedClient.lastLocation.addOnSuccessListener { location ->
-                                Log.d(TAG, "Location obtained: ${location?.latitude}, ${location?.longitude}")
-                                loginViewModel.onLoginClicked(onLoginSuccess, location)
-                            }.addOnFailureListener {
-                                Log.e(TAG, "Failed to get location", it)
-                                loginViewModel.onLoginClicked(onLoginSuccess, null)
-                            }
-                        } else {
-                            Log.d(TAG, "Location permission not granted, requesting permission")
-                            locationPermission.launchPermissionRequest()
-                        }
+                        Log.d(tag, "Login button clicked")
+                        checkAndRequestPermissions()
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -241,7 +320,7 @@ fun LoginScreen(
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     if (uiState.isLoading) {
-                        Log.d(TAG, "Showing loading indicator")
+                        Log.d(tag, "Showing loading indicator")
                         CircularProgressIndicator(color = Color.White)
                     } else {
                         Text("Ingresar", color = Color.White, fontSize = 18.sp)
@@ -258,21 +337,4 @@ fun LoginScreenPreview() {
     /* MaterialTheme {
         LoginScreen()
     }*/
-}
-
-@OptIn(ExperimentalPermissionsApi::class)
-@Composable
-fun EnsureLocationPermission(onGranted: (Boolean) -> Unit) {
-    val permState = rememberPermissionState(
-        Manifest.permission.ACCESS_FINE_LOCATION
-    )
-    LaunchedEffect(Unit) {
-        // si ya está concedido -> callback inmediato
-        if (permState.status.isGranted) onGranted(true)
-        else permState.launchPermissionRequest()
-    }
-    // escucha cambios
-    LaunchedEffect(permState.status) {
-        onGranted(permState.status.isGranted)
-    }
 }

@@ -4,9 +4,9 @@ import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.coplanin.terrainfo.TerrainfoApp
 import com.coplanin.terrainfo.data.local.dao.CommonDataDao
 import com.coplanin.terrainfo.data.local.entity.CommonDataEntity
-import com.coplanin.terrainfo.util.copyAssetToFile
 import com.google.android.gms.maps.model.LatLng
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -16,12 +16,11 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import mil.nga.geopackage.GeoPackageFactory
+import mil.nga.geopackage.GeoPackage
 import mil.nga.proj.ProjectionFactory
 import mil.nga.proj.ProjectionTransform
 import mil.nga.sf.GeometryType
 import org.locationtech.proj4j.ProjCoordinate
-import java.io.File
 import javax.inject.Inject
 
 @HiltViewModel
@@ -52,24 +51,17 @@ class MapViewModel @Inject constructor(
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
-            val file = copyAssetToFile(context, "modelo_col_smart_vc.gpkg")
-            Log.d("GeoPkgInit", "GeoPackage copiado a ruta: ${file.absolutePath}")
-
-            loadGpkgPolygons(file.absolutePath)
-            loadGpkgPoints(file.absolutePath)
+            val app = context.applicationContext as TerrainfoApp
+            val gpkg = app.getGeoPackage()
+            if (gpkg != null) {
+                loadGpkgPolygons(gpkg)
+                loadGpkgPoints(gpkg)
+            }
         }
     }
 
-
-    private fun loadGpkgPoints(geoPackagePath: String) = viewModelScope.launch(Dispatchers.IO) {
-        Log.d("PointDebug", "→ Iniciando carga de puntos desde: $geoPackagePath")
-        val manager = GeoPackageFactory.getManager(context)
-        val gpkg = manager.openExternal(File(geoPackagePath)) ?: run {
-            Log.e("PointDebug", "❌ No se pudo abrir el GeoPackage en $geoPackagePath")
-            return@launch
-        }
-
-        Log.d("PointDebug", "✅ GeoPackage abierto correctamente")
+    private fun loadGpkgPoints(gpkg: GeoPackage) = viewModelScope.launch(Dispatchers.IO) {
+        Log.d("PointDebug", "→ Iniciando carga de puntos")
         val dao = gpkg.getFeatureDao("ilc_predio")
         Log.d("PointDebug", "📦 Tabla ilc_predio abierta con ${dao.count()} filas")
 
@@ -115,27 +107,18 @@ class MapViewModel @Inject constructor(
         }
 
         _points.emit(out)
-        gpkg.close()
-        Log.d("PointDebug", "📦 GeoPackage cerrado tras procesar puntos")
     }
 
     private val _polygonPoints = MutableStateFlow<List<List<LatLng>>>(emptyList())
     val polygonPoints: StateFlow<List<List<LatLng>>> = _polygonPoints
 
-    private fun loadGpkgPolygons(geoPackagePath: String) = viewModelScope.launch(Dispatchers.IO) {
-        Log.d("PolygonDebug", "→ Iniciando carga de polígonos desde: $geoPackagePath")
-        val manager = GeoPackageFactory.getManager(context)
-        val gpkg = manager.openExternal(File(geoPackagePath)) ?: run {
-            Log.e("PolygonDebug", "❌ No se pudo abrir el GeoPackage en $geoPackagePath")
-            return@launch
-        }
-
+    private fun loadGpkgPolygons(gpkg: GeoPackage) = viewModelScope.launch(Dispatchers.IO) {
+        Log.d("PolygonDebug", "→ Iniciando carga de polígonos")
         val tables = gpkg.featureTables
         Log.d("PolygonDebug", "📂 Tablas disponibles: $tables")
 
         if (!tables.contains("cr_terreno")) {
             Log.d("PolygonDebug", "❌ La tabla 'cr_terreno' NO existe.")
-            gpkg.close()
             return@launch
         }
 
@@ -164,7 +147,6 @@ class MapViewModel @Inject constructor(
                 }
 
                 val geometry = row.geometry?.geometry
-                Log.d("PolygonDebug", "❌ Fila sin geometría. Cruda: ${columns.joinToString { col -> "$col=${row.getValue(col)}" }}")
                 if (geometry == null) {
                     Log.d("PolygonDebug", "⚠️ Fila sin geometría. Se omite.")
                     continue
@@ -206,10 +188,7 @@ class MapViewModel @Inject constructor(
 
         _polygonPoints.emit(polygons)
         Log.d("PolygonDebug", "✅ Total de polígonos emitidos: ${polygons.size}")
-        gpkg.close()
-        Log.d("PolygonDebug", "📦 GeoPackage cerrado tras procesar polígonos")
     }
-
 
     /** Elementos completos para la hoja inferior  */
     val visits: StateFlow<List<CommonDataEntity>> =

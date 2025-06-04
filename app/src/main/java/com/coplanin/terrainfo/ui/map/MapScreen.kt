@@ -554,6 +554,12 @@ fun AddPropertyForm(
                     label = { Text("Numero_Predial_Nacional") },
                     modifier = Modifier.fillMaxWidth()
                 )
+                OutlinedTextField(
+                    value = tipoReferenciaFmiAntiguo,
+                    onValueChange = { tipoReferenciaFmiAntiguo = it },
+                    label = { Text("Tipo Referencia FMI Antiguo") },
+                    modifier = Modifier.fillMaxWidth()
+                )
                 Spacer(Modifier.height(8.dp))
                 Text("Características", style = MaterialTheme.typography.titleMedium)
                 ExposedDropdownMenuBox(
@@ -660,12 +666,6 @@ fun AddPropertyForm(
                     onValueChange = { areaRegistral = it },
                     label = { Text("Area_Registral_M2") },
                     suffix = { Text("m²") },
-                    modifier = Modifier.fillMaxWidth()
-                )
-                OutlinedTextField(
-                    value = tipoReferenciaFmiAntiguo,
-                    onValueChange = { tipoReferenciaFmiAntiguo = it },
-                    label = { Text("Tipo Referencia FMI Antiguo") },
                     modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(Modifier.height(8.dp))

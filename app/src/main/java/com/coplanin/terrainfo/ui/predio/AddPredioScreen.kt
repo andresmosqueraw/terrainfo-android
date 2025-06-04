@@ -210,12 +210,12 @@ fun AddPredioScreen(
                 onClick = {
                     val predio = PredioEntity(
                         codigoOrip = idOperacion,
-                        matricula = matriculaInmobiliaria,
-                        areaTerreno = areaCatastral,
-                        numeroPredial = numeroPredial,
+                        matriculaInmobiliaria = matriculaInmobiliaria,
+                        areaCatastralTerreno = areaCatastral,
+                        numeroPredialNacional = numeroPredial,
                         tipo = tipo,
-                        condicion = condicionPredio,
-                        destino = destinoEconomico,
+                        condicionPredio = condicionPredio,
+                        destinacionEconomica = destinoEconomico,
                         areaRegistral = areaRegistral,
                         tipoReferenciaFmiAntiguo = tipoReferenciaFmiAntiguo
                     )

@@ -78,26 +78,26 @@ class MainActivity : ComponentActivity() {
                     }
 
                     composable(
-                        "predio_detail/{id}?codigoOrip={codigoOrip}&matricula={matricula}&areaTerreno={areaTerreno}&tipo={tipo}&condicion={condicion}&destino={destino}&areaRegistral={areaRegistral}",
+                        "predio_detail/{id}?codigoOrip={codigoOrip}&matriculaInmobiliaria={matriculaInmobiliaria}&areaCatastralTerreno={areaCatastralTerreno}&tipo={tipo}&condicionPredio={condicionPredio}&destinacionEconomica={destinacionEconomica}&areaRegistral={areaRegistral}",
                         arguments = listOf(
                             navArgument("id") { type = NavType.StringType },
                             navArgument("codigoOrip") { type = NavType.StringType; defaultValue = "" },
-                            navArgument("matricula") { type = NavType.StringType; defaultValue = "" },
-                            navArgument("areaTerreno") { type = NavType.StringType; defaultValue = "" },
+                            navArgument("matriculaInmobiliaria") { type = NavType.StringType; defaultValue = "" },
+                            navArgument("areaCatastralTerreno") { type = NavType.StringType; defaultValue = "" },
                             navArgument("tipo") { type = NavType.StringType; defaultValue = "" },
-                            navArgument("condicion") { type = NavType.StringType; defaultValue = "" },
-                            navArgument("destino") { type = NavType.StringType; defaultValue = "" },
+                            navArgument("condicionPredio") { type = NavType.StringType; defaultValue = "" },
+                            navArgument("destinacionEconomica") { type = NavType.StringType; defaultValue = "" },
                             navArgument("areaRegistral") { type = NavType.StringType; defaultValue = "" }
                         )
                     ) { backStackEntry ->
                         PredioEditScreen(
                             id = backStackEntry.arguments?.getString("id") ?: "",
                             codigoOrip = backStackEntry.arguments?.getString("codigoOrip") ?: "",
-                            matricula = backStackEntry.arguments?.getString("matricula") ?: "",
-                            areaTerreno = backStackEntry.arguments?.getString("areaTerreno") ?: "",
+                            matricula = backStackEntry.arguments?.getString("matriculaInmobiliaria") ?: "",
+                            areaTerreno = backStackEntry.arguments?.getString("areaCatastralTerreno") ?: "",
                             tipo = backStackEntry.arguments?.getString("tipo") ?: "",
-                            condicion = backStackEntry.arguments?.getString("condicion") ?: "",
-                            destino = backStackEntry.arguments?.getString("destino") ?: "",
+                            condicion = backStackEntry.arguments?.getString("condicionPredio") ?: "",
+                            destino = backStackEntry.arguments?.getString("destinacionEconomica") ?: "",
                             areaRegistral = backStackEntry.arguments?.getString("areaRegistral") ?: "",
                             tipoReferenciaFmiAntiguo = backStackEntry.arguments?.getString("tipoReferenciaFmiAntiguo") ?: "",
                             navController = navController

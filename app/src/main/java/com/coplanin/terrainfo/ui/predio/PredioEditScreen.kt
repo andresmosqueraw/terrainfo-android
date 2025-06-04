@@ -100,12 +100,12 @@ fun PredioEditScreen(
                 onClick = {
                     val updatedPredio = PredioEntity(
                         codigoOrip = codigoOripState,
-                        matricula = matriculaState,
-                        areaTerreno = areaTerrenoState,
-                        numeroPredial = id,
+                        matriculaInmobiliaria = matriculaState,
+                        areaCatastralTerreno = areaTerrenoState,
+                        numeroPredialNacional = id,
                         tipo = tipoState,
-                        condicion = condicionState,
-                        destino = destinoState,
+                        condicionPredio = condicionState,
+                        destinacionEconomica = destinoState,
                         areaRegistral = areaRegistralState,
                         tipoReferenciaFmiAntiguo = tipoReferenciaFmiAntiguoState
                     )

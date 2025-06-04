@@ -138,12 +138,12 @@ class PredioViewModel @Inject constructor() : ViewModel() {
                 if (idOp == idOperacion && tId != null) {
                     val entity = PredioEntity(
                         codigoOrip = row.getValue("codigo_orip")?.toString(),
-                        matricula = row.getValue("matricula_inmobiliaria")?.toString(),
-                        areaTerreno = row.getValue("area_catastral_terreno")?.toString(),
-                        numeroPredial = row.getValue("numero_predial_nacional")?.toString(),
+                        matriculaInmobiliaria = row.getValue("matricula_inmobiliaria")?.toString(),
+                        areaCatastralTerreno = row.getValue("area_catastral_terreno")?.toString(),
+                        numeroPredialNacional = row.getValue("numero_predial_nacional")?.toString(),
                         tipo = row.getValue("tipo")?.toString(),
-                        condicion = row.getValue("condicion_predio")?.toString(),
-                        destino = row.getValue("destinacion_economica")?.toString(),
+                        condicionPredio = row.getValue("condicion_predio")?.toString(),
+                        destinacionEconomica = row.getValue("destinacion_economica")?.toString(),
                         areaRegistral = row.getValue("area_registral_m2")?.toString(),
                         tipoReferenciaFmiAntiguo = row.getValue("tipo_referencia_fmi_antiguo")?.toString()
                     )
@@ -206,18 +206,19 @@ class PredioViewModel @Inject constructor() : ViewModel() {
                     
                     if (numPredial == id) {
                         Log.d(TAG, "📝 Actualizando campos del predio...")
-                        row.setValue("codigo_orip", updatedPredio.codigoOrip)
-                        val matriculaLong = updatedPredio.matricula?.toLongOrNull()
+                        val codigoOrip = updatedPredio.codigoOrip?.take(4) // Truncar a máximo 4 caracteres
+                        row.setValue("codigo_orip", codigoOrip)
+                        val matriculaLong = updatedPredio.matriculaInmobiliaria?.toLongOrNull()
                         if (matriculaLong != null) {
                             row.setValue("matricula_inmobiliaria", matriculaLong)
                         } else {
-                            Log.w(TAG, "⚠️ No se pudo convertir matricula a Long: ${updatedPredio.matricula}")
+                            Log.w(TAG, "⚠️ No se pudo convertir matriculaInmobiliaria a Long: ${updatedPredio.matriculaInmobiliaria}")
                         }
-                        val areaDouble = updatedPredio.areaTerreno?.toDoubleOrNull()
+                        val areaDouble = updatedPredio.areaCatastralTerreno?.toDoubleOrNull()
                         if (areaDouble != null) {
                             row.setValue("area_catastral_terreno", areaDouble)
                         } else {
-                            Log.w(TAG, "⚠️ No se pudo convertir area_catastral_terreno a Double: ${updatedPredio.areaTerreno}")
+                            Log.w(TAG, "⚠️ No se pudo convertir area_catastral_terreno a Double: ${updatedPredio.areaCatastralTerreno}")
                         }
                         val tipoLong = updatedPredio.tipo?.toLongOrNull()
                         if (tipoLong != null) {
@@ -225,17 +226,17 @@ class PredioViewModel @Inject constructor() : ViewModel() {
                         } else {
                             Log.w(TAG, "⚠️ No se pudo convertir tipo a Long: ${updatedPredio.tipo}")
                         }
-                        val condicionLong = updatedPredio.condicion?.toLongOrNull()
+                        val condicionLong = updatedPredio.condicionPredio?.toLongOrNull()
                         if (condicionLong != null) {
                             row.setValue("condicion_predio", condicionLong)
                         } else {
-                            Log.w(TAG, "⚠️ No se pudo convertir condicion_predio a Long: ${updatedPredio.condicion}")
+                            Log.w(TAG, "⚠️ No se pudo convertir condicion_predio a Long: ${updatedPredio.condicionPredio}")
                         }
-                        val destinoLong = updatedPredio.destino?.toLongOrNull()
+                        val destinoLong = updatedPredio.destinacionEconomica?.toLongOrNull()
                         if (destinoLong != null) {
                             row.setValue("destinacion_economica", destinoLong)
                         } else {
-                            Log.w(TAG, "⚠️ No se pudo convertir destinacion_economica a Long: ${updatedPredio.destino}")
+                            Log.w(TAG, "⚠️ No se pudo convertir destinacion_economica a Long: ${updatedPredio.destinacionEconomica}")
                         }
                         val areaRegistralDouble = updatedPredio.areaRegistral?.toDoubleOrNull()
                         if (areaRegistralDouble != null) {
@@ -323,37 +324,38 @@ class PredioViewModel @Inject constructor() : ViewModel() {
             val row = dao.newRow()
             
             // Establecer valores
-            row.setValue("codigo_orip", predio.codigoOrip)
-            val matriculaLong = predio.matricula?.toLongOrNull()
+            val codigoOrip = predio.codigoOrip?.take(4) // Truncar a máximo 4 caracteres
+            row.setValue("codigo_orip", codigoOrip)
+            val matriculaLong = predio.matriculaInmobiliaria?.toLongOrNull()
             if (matriculaLong != null) {
                 row.setValue("matricula_inmobiliaria", matriculaLong)
             } else {
-                Log.w(TAG, "⚠️ No se pudo convertir matricula a Long: ${predio.matricula}")
+                Log.w(TAG, "⚠️ No se pudo convertir matriculaInmobiliaria a Long: ${predio.matriculaInmobiliaria}")
             }
-            val areaDouble = predio.areaTerreno?.toDoubleOrNull()
+            val areaDouble = predio.areaCatastralTerreno?.toDoubleOrNull()
             if (areaDouble != null) {
                 row.setValue("area_catastral_terreno", areaDouble)
             } else {
-                Log.w(TAG, "⚠️ No se pudo convertir area_catastral_terreno a Double: ${predio.areaTerreno}")
+                Log.w(TAG, "⚠️ No se pudo convertir area_catastral_terreno a Double: ${predio.areaCatastralTerreno}")
             }
-            row.setValue("numero_predial_nacional", predio.numeroPredial)
+            row.setValue("numero_predial_nacional", predio.numeroPredialNacional)
             val tipoLong = predio.tipo?.toLongOrNull()
             if (tipoLong != null) {
                 row.setValue("tipo", tipoLong)
             } else {
                 Log.w(TAG, "⚠️ No se pudo convertir tipo a Long: ${predio.tipo}")
             }
-            val condicionLong = predio.condicion?.toLongOrNull()
+            val condicionLong = predio.condicionPredio?.toLongOrNull()
             if (condicionLong != null) {
                 row.setValue("condicion_predio", condicionLong)
             } else {
-                Log.w(TAG, "⚠️ No se pudo convertir condicion_predio a Long: ${predio.condicion}")
+                Log.w(TAG, "⚠️ No se pudo convertir condicion_predio a Long: ${predio.condicionPredio}")
             }
-            val destinoLong = predio.destino?.toLongOrNull()
+            val destinoLong = predio.destinacionEconomica?.toLongOrNull()
             if (destinoLong != null) {
                 row.setValue("destinacion_economica", destinoLong)
             } else {
-                Log.w(TAG, "⚠️ No se pudo convertir destinacion_economica a Long: ${predio.destino}")
+                Log.w(TAG, "⚠️ No se pudo convertir destinacion_economica a Long: ${predio.destinacionEconomica}")
             }
             val areaRegistralDouble = predio.areaRegistral?.toDoubleOrNull()
             if (areaRegistralDouble != null) {

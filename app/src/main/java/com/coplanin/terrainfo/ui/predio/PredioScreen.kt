@@ -98,17 +98,17 @@ private fun PredioContent(
             title = "Predio",
             onEditClick = {
                 navController.navigate(
-                    "predio_detail/${predio.numeroPredial}?codigoOrip=${predio.codigoOrip}&matricula=${predio.matricula}&areaTerreno=${predio.areaTerreno}&tipo=${predio.tipo}&condicion=${predio.condicion}&destino=${predio.destino}&areaRegistral=${predio.areaRegistral ?: ""}"
+                    "predio_detail/${predio.numeroPredialNacional}?codigoOrip=${predio.codigoOrip}&matriculaInmobiliaria=${predio.matriculaInmobiliaria}&areaCatastralTerreno=${predio.areaCatastralTerreno}&tipo=${predio.tipo}&condicionPredio=${predio.condicionPredio}&destinacionEconomica=${predio.destinacionEconomica}&areaRegistral=${predio.areaRegistral ?: ""}"
                 )
             }
         ) {
             Detail("Código ORIP", predio.codigoOrip)
-            Detail("Matrícula Inmobiliaria", predio.matricula)
-            Detail("Área Catastral Terreno", predio.areaTerreno)
-            Detail("Número Predial Nacional", predio.numeroPredial)
+            Detail("Matrícula Inmobiliaria", predio.matriculaInmobiliaria)
+            Detail("Área Catastral Terreno", predio.areaCatastralTerreno)
+            Detail("Número Predial Nacional", predio.numeroPredialNacional)
             Detail("Tipo", predio.tipo)
-            Detail("Condición Predio", predio.condicion)
-            Detail("Destino Económico", predio.destino)
+            Detail("Condición Predio", predio.condicionPredio)
+            Detail("Destino Económico", predio.destinacionEconomica)
             Detail("Área Registral m²", predio.areaRegistral)
             Detail("Tipo Referencia FMI Antiguo", predio.tipoReferenciaFmiAntiguo)
         }

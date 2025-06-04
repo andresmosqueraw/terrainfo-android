@@ -36,6 +36,13 @@ import com.mapbox.maps.extension.compose.annotation.generated.PolygonAnnotation
 import com.mapbox.maps.extension.compose.annotation.generated.PolygonAnnotationState
 import com.mapbox.maps.extension.compose.style.MapStyle
 import com.mapbox.maps.extension.compose.annotation.generated.PolylineAnnotation
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -66,6 +73,9 @@ fun MapScreen(
             center(Point.fromLngLat(-74.182224, 4.611598)) // Bogotá
         }
     }
+
+    var showAddPropertyForm by remember { mutableStateOf(false) }
+    var newPointLatLng by remember { mutableStateOf<LatLng?>(null) }
 
     LaunchedEffect(selectedVisit) {
         scaffoldState.bottomSheetState.expand()
@@ -345,7 +355,10 @@ fun MapScreen(
                 attribution = {},    // Oculta atribución
                 style = { MapStyle(style = Style.LIGHT) },
                 onMapClickListener = if (isAddingPoint) { point ->
-                    viewModel.addPoint(LatLng(point.latitude(), point.longitude()))
+                    val latLng = LatLng(point.latitude(), point.longitude())
+                    viewModel.addPoint(latLng)
+                    newPointLatLng = latLng
+                    showAddPropertyForm = true
                     true
                 } else null
             ) {
@@ -480,6 +493,14 @@ fun MapScreen(
             }
         }
     }
+
+    if (showAddPropertyForm && newPointLatLng != null) {
+        AddPropertyForm(
+            latLng = newPointLatLng!!,
+            onDismiss = { showAddPropertyForm = false },
+            onSave = { /* Aquí puedes guardar la propiedad en tu ViewModel o base de datos */ showAddPropertyForm = false }
+        )
+    }
 }
 
 /* ---------- helper composable para el detalle ---------- */
@@ -493,4 +514,215 @@ private fun DetailRow(label: String, value: String?) {
         Text(text = label, style = MaterialTheme.typography.labelLarge, color = Color.Gray)
         Text(text = content ?: "No disponible", style = MaterialTheme.typography.bodyLarge)
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AddPropertyForm(
+    latLng: LatLng,
+    onDismiss: () -> Unit,
+    onSave: () -> Unit
+) {
+    var idOperacion by remember { mutableStateOf("") }
+    var departamento by remember { mutableStateOf("") }
+    var municipio by remember { mutableStateOf("") }
+    var codigoOrip by remember { mutableStateOf("") }
+    var matriculaInmobiliaria by remember { mutableStateOf("") }
+    var numeroPredial by remember { mutableStateOf("") }
+    var tipo by remember { mutableStateOf("Urbano") }
+    var expandedTipo by remember { mutableStateOf(false) }
+    var condicionPredio by remember { mutableStateOf("Propiedad Privada") }
+    var expandedCondicion by remember { mutableStateOf(false) }
+    var destinoEconomico by remember { mutableStateOf("Comercial") }
+    var expandedDestino by remember { mutableStateOf(false) }
+    var areaCatastral by remember { mutableStateOf("") }
+    var areaRegistral by remember { mutableStateOf("") }
+    var direccion by remember { mutableStateOf("") }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Agregar Nuevo Predio") },
+        text = {
+            Column(
+                modifier = Modifier
+                    .verticalScroll(rememberScrollState())
+                    .fillMaxWidth()
+            ) {
+                Text("Información Básica", style = MaterialTheme.typography.titleMedium)
+                OutlinedTextField(
+                    value = idOperacion,
+                    onValueChange = { idOperacion = it },
+                    label = { Text("Id_Operacion") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    value = departamento,
+                    onValueChange = { departamento = it },
+                    label = { Text("Departamento") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    value = municipio,
+                    onValueChange = { municipio = it },
+                    label = { Text("Municipio") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(Modifier.height(8.dp))
+                Text("Información Registral", style = MaterialTheme.typography.titleMedium)
+                OutlinedTextField(
+                    value = codigoOrip,
+                    onValueChange = { codigoOrip = it },
+                    label = { Text("Codigo_ORIP") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    value = matriculaInmobiliaria,
+                    onValueChange = { matriculaInmobiliaria = it },
+                    label = { Text("Matricula_Inmobiliaria") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    value = numeroPredial,
+                    onValueChange = { numeroPredial = it },
+                    label = { Text("Numero_Predial_Nacional") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(Modifier.height(8.dp))
+                Text("Características", style = MaterialTheme.typography.titleMedium)
+                ExposedDropdownMenuBox(
+                    expanded = expandedTipo,
+                    onExpandedChange = { expandedTipo = !expandedTipo }
+                ) {
+                    OutlinedTextField(
+                        value = tipo,
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Tipo") },
+                        modifier = Modifier.menuAnchor().fillMaxWidth(),
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedTipo) }
+                    )
+                    DropdownMenu(
+                        expanded = expandedTipo,
+                        onDismissRequest = { expandedTipo = false }
+                    ) {
+                        listOf("Urbano", "Rural").forEach {
+                            DropdownMenuItem(
+                                text = { Text(it) },
+                                onClick = {
+                                    tipo = it
+                                    expandedTipo = false
+                                }
+                            )
+                        }
+                    }
+                }
+                ExposedDropdownMenuBox(
+                    expanded = expandedCondicion,
+                    onExpandedChange = { expandedCondicion = !expandedCondicion }
+                ) {
+                    OutlinedTextField(
+                        value = condicionPredio,
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Condicion_Predio") },
+                        modifier = Modifier.menuAnchor().fillMaxWidth(),
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedCondicion) }
+                    )
+                    DropdownMenu(
+                        expanded = expandedCondicion,
+                        onDismissRequest = { expandedCondicion = false }
+                    ) {
+                        listOf("Propiedad Privada", "Propiedad Pública").forEach {
+                            DropdownMenuItem(
+                                text = { Text(it) },
+                                onClick = {
+                                    condicionPredio = it
+                                    expandedCondicion = false
+                                }
+                            )
+                        }
+                    }
+                }
+                ExposedDropdownMenuBox(
+                    expanded = expandedDestino,
+                    onExpandedChange = { expandedDestino = !expandedDestino }
+                ) {
+                    OutlinedTextField(
+                        value = destinoEconomico,
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Destinacion_Economica") },
+                        modifier = Modifier.menuAnchor().fillMaxWidth(),
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedDestino) }
+                    )
+                    DropdownMenu(
+                        expanded = expandedDestino,
+                        onDismissRequest = { expandedDestino = false }
+                    ) {
+                        listOf("Comercial", "Residencial", "Industrial", "Otro").forEach {
+                            DropdownMenuItem(
+                                text = { Text(it) },
+                                onClick = {
+                                    destinoEconomico = it
+                                    expandedDestino = false
+                                }
+                            )
+                        }
+                    }
+                }
+                Spacer(Modifier.height(8.dp))
+                Text("Áreas", style = MaterialTheme.typography.titleMedium)
+                OutlinedTextField(
+                    value = areaCatastral,
+                    onValueChange = { areaCatastral = it },
+                    label = { Text("Area_Catastral_Terreno") },
+                    suffix = { Text("m²") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    value = areaRegistral,
+                    onValueChange = { areaRegistral = it },
+                    label = { Text("Area_Registral_M2") },
+                    suffix = { Text("m²") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(Modifier.height(8.dp))
+                Text("Dirección", style = MaterialTheme.typography.titleMedium)
+                OutlinedTextField(
+                    value = direccion,
+                    onValueChange = { direccion = it },
+                    label = { Text("Dirección") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(Modifier.height(8.dp))
+                Text("Ubicación", style = MaterialTheme.typography.titleMedium)
+                OutlinedTextField(
+                    value = latLng.latitude.toString(),
+                    onValueChange = {},
+                    label = { Text("Latitud") },
+                    enabled = false,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    value = latLng.longitude.toString(),
+                    onValueChange = {},
+                    label = { Text("Longitud") },
+                    enabled = false,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = onSave
+            ) {
+                Text("Guardar Propiedad")
+            }
+        },
+        dismissButton = {
+            OutlinedButton(onClick = onDismiss) {
+                Text("Cancelar")
+            }
+        }
+    )
 }

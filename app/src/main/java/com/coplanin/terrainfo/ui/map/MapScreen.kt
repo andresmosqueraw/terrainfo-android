@@ -393,27 +393,15 @@ fun MapScreen(
 
                 points.forEach { p ->
                     val geo = Point.fromLngLat(p.latLng.longitude, p.latLng.latitude)
-                    PointAnnotation(
-                        point = geo,
-                        onClick = { annotation ->
+                    PointAnnotation(point = geo) {
+                        iconImage = markerIcon
+                        iconSize = 0.8
+                        interactionsState.onClicked {
                             Log.d("MapScreen", "Punto clicado: ${p.title} (Lat: ${p.latLng.latitude}, Lng: ${p.latLng.longitude})")
-
-                            // Busca el CommonDataEntity correspondiente
                             val matchingVisit = visits.find { it.idSearch == p.title }
-                            Log.d("MapScreen", "Buscando entidad con title: ${p.title}")
-
-                            if (matchingVisit != null) {
-                                Log.d("MapScreen", "Entidad encontrada: ${matchingVisit.idSearch}")
-                            } else {
-                                Log.d("MapScreen", "No se encontró una entidad con idSearch: ${p.title}")
-                            }
-
                             selectedVisit = matchingVisit
                             true
                         }
-                    ) {
-                        iconImage = markerIcon
-                        iconSize = 0.8
                     }
                 }
             }
@@ -598,7 +586,10 @@ fun AddPropertyForm(
                         onValueChange = {},
                         readOnly = true,
                         label = { Text("Tipo") },
-                        modifier = Modifier.menuAnchor().fillMaxWidth(),
+                        modifier = Modifier.menuAnchor(
+                            type = ExposedDropdownMenuAnchorType.PrimaryEditable,
+                            enabled = true
+                        ).fillMaxWidth(),
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedTipo) }
                     )
                     DropdownMenu(
@@ -625,7 +616,10 @@ fun AddPropertyForm(
                         onValueChange = {},
                         readOnly = true,
                         label = { Text("Condicion_Predio") },
-                        modifier = Modifier.menuAnchor().fillMaxWidth(),
+                        modifier = Modifier.menuAnchor(
+                            type = ExposedDropdownMenuAnchorType.PrimaryEditable,
+                            enabled = true
+                        ).fillMaxWidth(),
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedCondicion) }
                     )
                     DropdownMenu(
@@ -652,7 +646,10 @@ fun AddPropertyForm(
                         onValueChange = {},
                         readOnly = true,
                         label = { Text("Destinacion_Economica") },
-                        modifier = Modifier.menuAnchor().fillMaxWidth(),
+                        modifier = Modifier.menuAnchor(
+                            type = ExposedDropdownMenuAnchorType.PrimaryEditable,
+                            enabled = true
+                        ).fillMaxWidth(),
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedDestino) }
                     )
                     DropdownMenu(

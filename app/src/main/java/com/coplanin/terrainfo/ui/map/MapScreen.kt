@@ -63,16 +63,7 @@ fun MapScreen(
     val viewportState = rememberMapViewportState {
         setCameraOptions {
             zoom(12.0)
-            center(Point.fromLngLat(-74.0721, 4.7110)) // Bogotá
-        }
-    }
-
-    LaunchedEffect(points) {
-        if (points.isNotEmpty()) {
-            viewportState.setCameraOptions {
-                zoom(14.0)
-                center(Point.fromLngLat(points.first().latLng.longitude, points.first().latLng.latitude))
-            }
+            center(Point.fromLngLat(-74.182224, 4.611598)) // Bogotá
         }
     }
 

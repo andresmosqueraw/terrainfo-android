@@ -363,6 +363,12 @@ fun MapScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
+            // Move marker icon creation outside to avoid recreation on recomposition
+            val markerIcon = rememberIconImage(
+                key = R.drawable.red_marker,
+                painter = painterResource(R.drawable.red_marker)
+            )
+
             MapboxMap(
                 modifier = Modifier.fillMaxSize(),
                 mapViewportState = viewportState,
@@ -400,19 +406,20 @@ fun MapScreen(
                         simultaneousRotateAndPinchToZoomEnabled = true // ✅ Zoom y rotación simultáneos
                         Log.d("MapScreen", "🎮 Gestures configurados: pinchZoom✓ scroll✓ rotate✓ pitch✗")
                     }
+                    
+                    // Camera change listener disabled to prevent annotation source errors
+                    // Previously: mapView.mapboxMap.subscribeCameraChanged { ... }
+                    // This was causing frequent annotation recreation leading to orphaned sources
+                    Log.d("MapScreen", "📷 Camera change listener disabled to prevent annotation source errors")
                 }
-                val markerIcon = rememberIconImage(
-                    key = R.drawable.red_marker,
-                    painter = painterResource(R.drawable.red_marker)
-                )
 
                 // Agregar polígonos
-                polygonPoints.forEach { latLngList ->
+                polygonPoints.forEachIndexed { index, latLngList ->
                     val mappedPolygonPoints = latLngList.map {
                         Point.fromLngLat(it.longitude, it.latitude)
                     }
 
-                    val polygonState = remember { PolygonAnnotationState() }
+                    val polygonState = remember(index) { PolygonAnnotationState() }
                     polygonState.fillColor = Color(0xFFFFA500) // Color naranja
                     polygonState.fillOutlineColor = Color(0xFF000000) // Color negro
                     polygonState.fillOpacity = 0.3 // Opacidad del relleno
@@ -421,25 +428,20 @@ fun MapScreen(
                         points = listOf(mappedPolygonPoints),
                         polygonAnnotationState = polygonState
                     )
-
-                    PolylineAnnotation(
-                        points = mappedPolygonPoints + mappedPolygonPoints.first(), // Cerrar el polígono
-                    ) {
-                        lineColor = Color(0xFF000000) // Color del borde
-                        lineWidth = 1.0 // Grosor del borde en píxeles
-                    }
                 }
 
                 points.forEach { p ->
                     val geo = Point.fromLngLat(p.latLng.longitude, p.latLng.latitude)
-                    PointAnnotation(point = geo) {
-                        iconImage = markerIcon
-                        iconSize = 0.8
-                        interactionsState.onClicked {
-                            Log.d("MapScreen", "Punto clicado: ${p.title} (Lat: ${p.latLng.latitude}, Lng: ${p.latLng.longitude})")
-                            val matchingVisit = visits.find { it.idSearch == p.title }
-                            selectedVisit = matchingVisit
-                            true
+                    key(p.id) { // Use key composable function to help Compose track annotations
+                        PointAnnotation(point = geo) {
+                            iconImage = markerIcon
+                            iconSize = 0.8
+                            interactionsState.onClicked {
+                                Log.d("MapScreen", "Punto clicado: ${p.title} (Lat: ${p.latLng.latitude}, Lng: ${p.latLng.longitude})")
+                                val matchingVisit = visits.find { it.idSearch == p.title }
+                                selectedVisit = matchingVisit
+                                true
+                            }
                         }
                     }
                 }
@@ -498,6 +500,22 @@ fun MapScreen(
                     imageVector = Plus,
                     contentDescription = if (isAddingPoint) "Cancelar" else "Agregar",
                     tint = Color.White
+                )
+            }
+
+            /* ---------- Refresh FAB ---------- */
+            FloatingActionButton(
+                onClick = { viewModel.refreshMapData() },
+                containerColor = Color(0xFF4CAF50),
+                shape = CircleShape,
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(start = 24.dp, end = 24.dp, bottom = 100.dp) // Position above the add button
+            ) {
+                Text(
+                    text = "🔄",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = Color.White
                 )
             }
 

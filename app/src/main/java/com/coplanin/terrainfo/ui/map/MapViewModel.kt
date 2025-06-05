@@ -11,6 +11,8 @@ import com.google.android.gms.maps.model.LatLng
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -21,6 +23,7 @@ import mil.nga.proj.ProjectionFactory
 import mil.nga.proj.ProjectionTransform
 import mil.nga.sf.GeometryType
 import org.locationtech.proj4j.ProjCoordinate
+import kotlin.math.abs
 import javax.inject.Inject
 
 @HiltViewModel
@@ -34,6 +37,56 @@ class MapViewModel @Inject constructor(
 
     private val _isAddingPoint = MutableStateFlow(false)
     val isAddingPoint: StateFlow<Boolean> = _isAddingPoint
+
+    // Add zoom-based loading state
+    private val _currentZoom = MutableStateFlow(16.0)
+    val currentZoom: StateFlow<Double> = _currentZoom
+    
+    // Add debouncing for zoom updates
+    private var zoomUpdateJob: Job? = null
+    
+    // Add loading state to prevent multiple concurrent loads
+    private var isLoading = false
+    
+    // Function to get max items based on zoom level - now static to prevent constant reloading
+    private fun getMaxItemsForZoom(zoom: Double): Int {
+        return when {
+            zoom < 14.0 -> 10     // Reduced from 5 to show more items at lower zoom
+            zoom < 16.0 -> 20     // Show reasonable amount
+            zoom < 18.0 -> 30     // Show more details
+            else -> 50            // Maximum detail
+        }
+    }
+    
+    fun updateZoomLevel(zoom: Double) {
+        // Only track zoom but don't reload data to prevent annotation source errors
+        if (abs(zoom - _currentZoom.value) > 1.0) {
+            _currentZoom.value = zoom
+            Log.d("MapViewModel", "🔍 Zoom updated to: $zoom (data reloading disabled to prevent annotation errors)")
+        }
+    }
+
+    // Manual refresh function as alternative to zoom-based reloading
+    fun refreshMapData() {
+        if (!isLoading) {
+            viewModelScope.launch(Dispatchers.IO) {
+                isLoading = true
+                try {
+                    val app = context.applicationContext as TerrainfoApp
+                    val gpkg = app.getGeoPackage()
+                    if (gpkg != null) {
+                        val currentZoom = _currentZoom.value
+                        val maxItems = getMaxItemsForZoom(currentZoom)
+                        loadGpkgPoints(gpkg, maxItems)
+                        loadGpkgPolygons(gpkg, maxItems)
+                        Log.d("MapViewModel", "🔄 Manual data refresh completed with $maxItems items for zoom $currentZoom")
+                    }
+                } finally {
+                    isLoading = false
+                }
+            }
+        }
+    }
 
     fun toggleAddPointMode() {
         _isAddingPoint.value = !_isAddingPoint.value
@@ -54,14 +107,16 @@ class MapViewModel @Inject constructor(
             val app = context.applicationContext as TerrainfoApp
             val gpkg = app.getGeoPackage()
             if (gpkg != null) {
-                loadGpkgPolygons(gpkg)
-                loadGpkgPoints(gpkg)
+                // Load a fixed reasonable amount of data to prevent annotation source errors
+                loadGpkgPolygons(gpkg, 200) // Fixed amount instead of zoom-based
+                loadGpkgPoints(gpkg, 200)   // Fixed amount instead of zoom-based
+                Log.d("MapViewModel", "📊 Initial data loaded with fixed limits to prevent annotation errors")
             }
         }
     }
 
-    private fun loadGpkgPoints(gpkg: GeoPackage) = viewModelScope.launch(Dispatchers.IO) {
-        Log.d("PointDebug", "→ Iniciando carga de puntos (límite: 10)")
+    private fun loadGpkgPoints(gpkg: GeoPackage, maxPoints: Int = 10) = viewModelScope.launch(Dispatchers.IO) {
+        Log.d("PointDebug", "→ Iniciando carga de puntos (límite: $maxPoints)")
         val dao = gpkg.getFeatureDao("ilc_predio")
         Log.d("PointDebug", "📦 Tabla ilc_predio abierta con ${dao.count()} filas")
 
@@ -71,7 +126,6 @@ class MapViewModel @Inject constructor(
         )
 
         val out = mutableListOf<MapPoint>()
-        val maxPoints = 10 // Límite de puntos a mostrar
 
         dao.queryForAll().use { cursor ->
             var count = 0
@@ -118,8 +172,8 @@ class MapViewModel @Inject constructor(
     private val _polygonPoints = MutableStateFlow<List<List<LatLng>>>(emptyList())
     val polygonPoints: StateFlow<List<List<LatLng>>> = _polygonPoints
 
-    private fun loadGpkgPolygons(gpkg: GeoPackage) = viewModelScope.launch(Dispatchers.IO) {
-        Log.d("PolygonDebug", "→ Iniciando carga de polígonos (límite: 10)")
+    private fun loadGpkgPolygons(gpkg: GeoPackage, maxPolygons: Int = 10) = viewModelScope.launch(Dispatchers.IO) {
+        Log.d("PolygonDebug", "→ Iniciando carga de polígonos (límite: $maxPolygons)")
         val tables = gpkg.featureTables
         Log.d("PolygonDebug", "📂 Tablas disponibles: $tables")
 
@@ -139,7 +193,6 @@ class MapViewModel @Inject constructor(
         )
 
         val polygons = mutableListOf<List<LatLng>>()
-        val maxPolygons = 10 // Límite de polígonos a mostrar
 
         dao.queryForAll().use { cursor ->
             var index = 0
@@ -204,6 +257,11 @@ class MapViewModel @Inject constructor(
     val visits: StateFlow<List<CommonDataEntity>> =
         dao.observeAll()
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+    
+    override fun onCleared() {
+        super.onCleared()
+        zoomUpdateJob?.cancel()
+    }
 }
 
 data class MapPoint(val id: Long, val title: String, val latLng: LatLng)

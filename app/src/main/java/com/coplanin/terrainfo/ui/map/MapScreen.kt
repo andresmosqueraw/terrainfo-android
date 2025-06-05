@@ -36,7 +36,9 @@ import com.mapbox.maps.extension.compose.annotation.generated.PolygonAnnotation
 import com.mapbox.maps.extension.compose.annotation.generated.PolygonAnnotationState
 import com.mapbox.maps.extension.compose.style.MapStyle
 import com.mapbox.maps.extension.compose.annotation.generated.PolylineAnnotation
+import com.mapbox.maps.extension.compose.MapEffect
 import androidx.compose.material3.OutlinedTextField
+import com.mapbox.maps.plugin.gestures.gestures
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,6 +47,13 @@ fun MapScreen(
     modifier: Modifier = Modifier,
     viewModel: MapViewModel = hiltViewModel()
 ) {
+    // Configuración de límites de zoom
+    // Referencia de niveles de zoom:
+    // 1-3: Mundo/Continente  4-6: País/Estado  7-10: Región/Ciudad
+    // 11-14: Zona urbana     15-17: Barrio     18-20: Calle/Edificio
+    val MIN_ZOOM = 16.0   // Zoom mínimo (nivel región - para ver contexto geográfico amplio) (lo maximo que se puede ver)
+    val MAX_ZOOM = 20.0  // Zoom máximo (nivel calle - detalle máximo para inspección de predios) (lo minimo que se puede ver)
+    val DEFAULT_ZOOM = 16.0 // Zoom por defecto (nivel barrio - ideal para ver predios)
     /* --- Flujos de datos --- */
     val points by viewModel.points.collectAsState()
     val visits by viewModel.visits.collectAsState()
@@ -63,7 +72,7 @@ fun MapScreen(
     /* --- Centrar mapa cuando hay puntos --- */
     val viewportState = rememberMapViewportState {
         setCameraOptions {
-            zoom(16.0)
+            zoom(DEFAULT_ZOOM)
             center(Point.fromLngLat(-74.182224, 4.611598)) // Bogotá como posición inicial
         }
     }
@@ -72,10 +81,13 @@ fun MapScreen(
     LaunchedEffect(points) {
         if (points.isNotEmpty()) {
             val firstPoint = points.first()
+            // Asegurar que el zoom inicial esté dentro de los límites configurados
+            val zoomLevel = DEFAULT_ZOOM.coerceIn(MIN_ZOOM, MAX_ZOOM)
             viewportState.setCameraOptions {
-                zoom(16.0)
+                zoom(zoomLevel)
                 center(Point.fromLngLat(firstPoint.latLng.longitude, firstPoint.latLng.latitude))
             }
+            Log.d("MapScreen", "📸 Cámara centrada en: ${firstPoint.latLng} con zoom: $zoomLevel")
         }
     }
 
@@ -366,6 +378,29 @@ fun MapScreen(
                     true
                 } else null
             ) {
+                // Configurar gestures y límites de zoom usando MapEffect
+                MapEffect(key1 = Unit) { mapView ->
+                    // Configurar límites de zoom usando CameraBoundsOptions
+                    val cameraBoundsOptions = com.mapbox.maps.CameraBoundsOptions.Builder()
+                        .minZoom(MIN_ZOOM)
+                        .maxZoom(MAX_ZOOM)
+                        .build()
+                    mapView.mapboxMap.setBounds(cameraBoundsOptions)
+                    Log.d("MapScreen", "🔍 Límites de zoom configurados: min=$MIN_ZOOM, max=$MAX_ZOOM")
+                    
+                    // Configurar controles de gestures
+                    mapView.gestures.apply {
+                        pinchToZoomEnabled = true                // ✅ Zoom con pellizco
+                        scrollEnabled = true                     // ✅ Desplazamiento con un dedo
+                        rotateEnabled = true                     // ✅ Rotación con dos dedos
+                        pitchEnabled = false                     // ❌ Deshabilitar inclinación para mejor rendimiento
+                        doubleTapToZoomInEnabled = true         // ✅ Doble tap para acercar
+                        doubleTouchToZoomOutEnabled = true      // ✅ Doble tap con dos dedos para alejar
+                        quickZoomEnabled = true                  // ✅ Quick zoom (doble tap y arrastrar)
+                        simultaneousRotateAndPinchToZoomEnabled = true // ✅ Zoom y rotación simultáneos
+                        Log.d("MapScreen", "🎮 Gestures configurados: pinchZoom✓ scroll✓ rotate✓ pitch✗")
+                    }
+                }
                 val markerIcon = rememberIconImage(
                     key = R.drawable.red_marker,
                     painter = painterResource(R.drawable.red_marker)

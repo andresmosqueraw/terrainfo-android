@@ -92,7 +92,7 @@ class PredioViewModel @Inject constructor() : ViewModel() {
             }
 
             Log.d(TAG, "🔒 Intentando abrir GeoPackage...")
-            val file = copyAssetToFile(ctx, "modelo_col_smart_vc.gpkg")
+            val file = copyAssetToFile(ctx, "modelo_col_smart_39000.gpkg")
             Log.d(TAG, "📁 Verificando archivo en ${file.absolutePath}")
             if (!file.exists()) {
                 Log.e(TAG, "❌ Archivo GeoPackage no encontrado en ${file.absolutePath}")

@@ -20,7 +20,7 @@ class TerrainfoApp : Application() {
             }
 
             Log.d(TAG, "🔒 Intentando abrir GeoPackage...")
-            val file = File(filesDir, "modelo_col_smart_vc.gpkg")
+            val file = File(filesDir, "modelo_col_smart_39000.gpkg")
             Log.d(TAG, "📁 Verificando archivo en ${file.absolutePath}")
             
             if (!file.exists()) {

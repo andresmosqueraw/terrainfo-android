@@ -41,11 +41,11 @@ class MapViewModel @Inject constructor(
 
     fun addPoint(latLng: LatLng) {
         val newPoint = MapPoint(
-            id = _points.value.size + 1,
+            id = (_points.value.size + 1).toLong(),
             title = "Nuevo punto ${_points.value.size + 1}",
             latLng = latLng
         )
-        _points.value = _points.value + newPoint
+        _points.value += newPoint
         _isAddingPoint.value = false
     }
 
@@ -61,7 +61,7 @@ class MapViewModel @Inject constructor(
     }
 
     private fun loadGpkgPoints(gpkg: GeoPackage) = viewModelScope.launch(Dispatchers.IO) {
-        Log.d("PointDebug", "→ Iniciando carga de puntos")
+        Log.d("PointDebug", "→ Iniciando carga de puntos (límite: 10)")
         val dao = gpkg.getFeatureDao("ilc_predio")
         Log.d("PointDebug", "📦 Tabla ilc_predio abierta con ${dao.count()} filas")
 
@@ -71,10 +71,11 @@ class MapViewModel @Inject constructor(
         )
 
         val out = mutableListOf<MapPoint>()
+        val maxPoints = 10 // Límite de puntos a mostrar
 
         dao.queryForAll().use { cursor ->
             var count = 0
-            while (cursor.moveToNext()) {
+            while (cursor.moveToNext() && out.size < maxPoints) {
                 val row = cursor.row
                 val geom = row.geometry?.geometry
 
@@ -87,7 +88,12 @@ class MapViewModel @Inject constructor(
                     val src = geom as mil.nga.sf.Point
                     val dstCoord = transform.transform(ProjCoordinate(src.x, src.y))
 
-                    val id = row.getValue("T_Id")?.toString()?.toInt() ?: -1
+                    val id = try {
+                        row.getValue("T_Id")?.toString()?.toLong() ?: -1L
+                    } catch (e: NumberFormatException) {
+                        Log.w("PointDebug", "⚠️ No se pudo parsear T_Id: ${row.getValue("T_Id")}, usando -1")
+                        -1L
+                    }
                     val title = row.getValue("id_operacion")?.toString() ?: "Sin título"
 
                     val point = MapPoint(
@@ -103,7 +109,7 @@ class MapViewModel @Inject constructor(
                     Log.d("PointDebug", "⛔ Tipo de geometría ignorado: ${geom.geometryType}")
                 }
             }
-            Log.d("PointDebug", "✅ Total puntos cargados: $count")
+            Log.d("PointDebug", "✅ Total puntos cargados: $count (máximo permitido: $maxPoints)")
         }
 
         _points.emit(out)
@@ -113,7 +119,7 @@ class MapViewModel @Inject constructor(
     val polygonPoints: StateFlow<List<List<LatLng>>> = _polygonPoints
 
     private fun loadGpkgPolygons(gpkg: GeoPackage) = viewModelScope.launch(Dispatchers.IO) {
-        Log.d("PolygonDebug", "→ Iniciando carga de polígonos")
+        Log.d("PolygonDebug", "→ Iniciando carga de polígonos (límite: 10)")
         val tables = gpkg.featureTables
         Log.d("PolygonDebug", "📂 Tablas disponibles: $tables")
 
@@ -133,10 +139,11 @@ class MapViewModel @Inject constructor(
         )
 
         val polygons = mutableListOf<List<LatLng>>()
+        val maxPolygons = 10 // Límite de polígonos a mostrar
 
         dao.queryForAll().use { cursor ->
             var index = 0
-            while (cursor.moveToNext()) {
+            while (cursor.moveToNext() && polygons.size < maxPolygons) {
                 index++
                 val row = cursor.row
                 Log.d("PolygonDebug", "📌 Fila #$index")
@@ -154,23 +161,26 @@ class MapViewModel @Inject constructor(
 
                 when (geometry.geometryType) {
                     GeometryType.POLYGON -> {
-                        val polygon = geometry as mil.nga.sf.Polygon
-                        val ring = polygon.rings.firstOrNull()
-                        if (ring == null) {
-                            Log.d("PolygonDebug", "⚠️ POLYGON sin anillo exterior")
-                            continue
+                        if (polygons.size < maxPolygons) {
+                            val polygon = geometry as mil.nga.sf.Polygon
+                            val ring = polygon.rings.firstOrNull()
+                            if (ring == null) {
+                                Log.d("PolygonDebug", "⚠️ POLYGON sin anillo exterior")
+                                continue
+                            }
+                            val latLngs = ring.points.map {
+                                val dst = transform.transform(ProjCoordinate(it.x, it.y))
+                                LatLng(dst.y, dst.x)
+                            }
+                            polygons.add(latLngs)
+                            Log.d("PolygonDebug", "✔ POLYGON agregado con ${latLngs.size} puntos")
                         }
-                        val latLngs = ring.points.map {
-                            val dst = transform.transform(ProjCoordinate(it.x, it.y))
-                            LatLng(dst.y, dst.x)
-                        }
-                        polygons.add(latLngs)
-                        Log.d("PolygonDebug", "✔ POLYGON agregado con ${latLngs.size} puntos")
                     }
 
                     GeometryType.MULTIPOLYGON -> {
                         val multiPolygon = geometry as mil.nga.sf.MultiPolygon
                         multiPolygon.polygons.forEachIndexed { i, poly ->
+                            if (polygons.size >= maxPolygons) return@forEachIndexed
                             val ring = poly.rings.firstOrNull() ?: return@forEachIndexed
                             val latLngs = ring.points.map {
                                 val dst = transform.transform(ProjCoordinate(it.x, it.y))
@@ -187,7 +197,7 @@ class MapViewModel @Inject constructor(
         }
 
         _polygonPoints.emit(polygons)
-        Log.d("PolygonDebug", "✅ Total de polígonos emitidos: ${polygons.size}")
+        Log.d("PolygonDebug", "✅ Total de polígonos emitidos: ${polygons.size} (máximo permitido: $maxPolygons)")
     }
 
     /** Elementos completos para la hoja inferior  */
@@ -196,5 +206,5 @@ class MapViewModel @Inject constructor(
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 }
 
-data class MapPoint(val id: Int, val title: String, val latLng: LatLng)
+data class MapPoint(val id: Long, val title: String, val latLng: LatLng)
 // data class VisitItem(val idSearch: String, val address: String)

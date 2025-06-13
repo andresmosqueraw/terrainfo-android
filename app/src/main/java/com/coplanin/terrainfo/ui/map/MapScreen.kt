@@ -1,6 +1,5 @@
 package com.coplanin.terrainfo.ui.map
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -15,30 +14,19 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.coplanin.terrainfo.R
 import com.coplanin.terrainfo.data.local.entity.CommonDataEntity
 import com.coplanin.terrainfo.ui.icons.ArrowBack
 import com.coplanin.terrainfo.ui.icons.Plus
 import com.coplanin.terrainfo.ui.icons.SearchIcon
 import com.coplanin.terrainfo.ui.icons.User
-import com.google.android.gms.maps.model.LatLng
-import com.mapbox.maps.Style
-import com.mapbox.maps.extension.compose.MapboxMap
-import com.mapbox.maps.extension.compose.annotation.generated.PointAnnotation
-import com.mapbox.maps.extension.compose.annotation.rememberIconImage
-import com.mapbox.maps.extension.compose.animation.viewport.rememberMapViewportState
-import com.mapbox.geojson.Point
-import com.mapbox.maps.extension.compose.annotation.generated.PolygonAnnotation
-import com.mapbox.maps.extension.compose.annotation.generated.PolygonAnnotationState
-import com.mapbox.maps.extension.compose.style.MapStyle
-import com.mapbox.maps.extension.compose.annotation.generated.PolylineAnnotation
-import com.mapbox.maps.extension.compose.MapEffect
 import androidx.compose.material3.OutlinedTextField
-import com.mapbox.maps.plugin.gestures.gestures
+
+
+private const val MBTILES_RASTER = "planet2.mbtiles"
+private const val MBTILES_POINTS = "predio_terreno_new.mbtiles"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -47,17 +35,8 @@ fun MapScreen(
     modifier: Modifier = Modifier,
     viewModel: MapViewModel = hiltViewModel()
 ) {
-    // Configuración de límites de zoom
-    // Referencia de niveles de zoom:
-    // 1-3: Mundo/Continente  4-6: País/Estado  7-10: Región/Ciudad
-    // 11-14: Zona urbana     15-17: Barrio     18-20: Calle/Edificio
-    val MIN_ZOOM = 16.0   // Zoom mínimo (nivel región - para ver contexto geográfico amplio) (lo maximo que se puede ver)
-    val MAX_ZOOM = 20.0  // Zoom máximo (nivel calle - detalle máximo para inspección de predios) (lo minimo que se puede ver)
-    val DEFAULT_ZOOM = 16.0 // Zoom por defecto (nivel barrio - ideal para ver predios)
     /* --- Flujos de datos --- */
-    val points by viewModel.points.collectAsState()
     val visits by viewModel.visits.collectAsState()
-    val polygonPoints by viewModel.polygonPoints.collectAsState()
     val isAddingPoint by viewModel.isAddingPoint.collectAsState()
 
     /* --- Hoja inferior y cámara --- */
@@ -68,31 +47,6 @@ fun MapScreen(
 
     /* --- Detalle seleccionado --- */
     var selectedVisit by remember { mutableStateOf<CommonDataEntity?>(null) }
-
-    /* --- Centrar mapa cuando hay puntos --- */
-    val viewportState = rememberMapViewportState {
-        setCameraOptions {
-            zoom(DEFAULT_ZOOM)
-            center(Point.fromLngLat(-74.182224, 4.611598)) // Bogotá como posición inicial
-        }
-    }
-
-    // Actualizar el viewport cuando los puntos estén disponibles
-    LaunchedEffect(points) {
-        if (points.isNotEmpty()) {
-            val firstPoint = points.first()
-            // Asegurar que el zoom inicial esté dentro de los límites configurados
-            val zoomLevel = DEFAULT_ZOOM.coerceIn(MIN_ZOOM, MAX_ZOOM)
-            viewportState.setCameraOptions {
-                zoom(zoomLevel)
-                center(Point.fromLngLat(firstPoint.latLng.longitude, firstPoint.latLng.latitude))
-            }
-            Log.d("MapScreen", "📸 Cámara centrada en: ${firstPoint.latLng} con zoom: $zoomLevel")
-        }
-    }
-
-    // var showAddPropertyForm by remember { mutableStateOf(false) }
-    // var newPointLatLng by remember { mutableStateOf<LatLng?>(null) }
 
     LaunchedEffect(selectedVisit) {
         scaffoldState.bottomSheetState.expand()
@@ -363,89 +317,12 @@ fun MapScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            // Move marker icon creation outside to avoid recreation on recomposition
-            val markerIcon = rememberIconImage(
-                key = R.drawable.red_marker,
-                painter = painterResource(R.drawable.red_marker)
+            /* -------- MAPA OFFLINE (MapLibre) -------- */
+            OfflineMapboxComposable(
+                modifier = Modifier.matchParentSize(),
+                mbTilesName     = MBTILES_RASTER,
+                pointsTilesName = MBTILES_POINTS
             )
-
-            MapboxMap(
-                modifier = Modifier.fillMaxSize(),
-                mapViewportState = viewportState,
-                compass = {},        // Oculta brújula
-                scaleBar = {},       // Oculta barra de escala
-                logo = {},           // Oculta logo Mapbox
-                attribution = {},    // Oculta atribución
-                style = { MapStyle(style = Style.LIGHT) },
-                onMapClickListener = if (isAddingPoint) { point ->
-                    val latLng = LatLng(point.latitude(), point.longitude())
-                    viewModel.addPoint(latLng)
-                    navController.navigate("add_predio?lat=${point.latitude()}&lng=${point.longitude()}")
-                    true
-                } else null
-            ) {
-                // Configurar gestures y límites de zoom usando MapEffect
-                MapEffect(key1 = Unit) { mapView ->
-                    // Configurar límites de zoom usando CameraBoundsOptions
-                    val cameraBoundsOptions = com.mapbox.maps.CameraBoundsOptions.Builder()
-                        .minZoom(MIN_ZOOM)
-                        .maxZoom(MAX_ZOOM)
-                        .build()
-                    mapView.mapboxMap.setBounds(cameraBoundsOptions)
-                    Log.d("MapScreen", "🔍 Límites de zoom configurados: min=$MIN_ZOOM, max=$MAX_ZOOM")
-                    
-                    // Configurar controles de gestures
-                    mapView.gestures.apply {
-                        pinchToZoomEnabled = true                // ✅ Zoom con pellizco
-                        scrollEnabled = true                     // ✅ Desplazamiento con un dedo
-                        rotateEnabled = true                     // ✅ Rotación con dos dedos
-                        pitchEnabled = false                     // ❌ Deshabilitar inclinación para mejor rendimiento
-                        doubleTapToZoomInEnabled = true         // ✅ Doble tap para acercar
-                        doubleTouchToZoomOutEnabled = true      // ✅ Doble tap con dos dedos para alejar
-                        quickZoomEnabled = true                  // ✅ Quick zoom (doble tap y arrastrar)
-                        simultaneousRotateAndPinchToZoomEnabled = true // ✅ Zoom y rotación simultáneos
-                        Log.d("MapScreen", "🎮 Gestures configurados: pinchZoom✓ scroll✓ rotate✓ pitch✗")
-                    }
-                    
-                    // Camera change listener disabled to prevent annotation source errors
-                    // Previously: mapView.mapboxMap.subscribeCameraChanged { ... }
-                    // This was causing frequent annotation recreation leading to orphaned sources
-                    Log.d("MapScreen", "📷 Camera change listener disabled to prevent annotation source errors")
-                }
-
-                // Agregar polígonos
-                polygonPoints.forEachIndexed { index, latLngList ->
-                    val mappedPolygonPoints = latLngList.map {
-                        Point.fromLngLat(it.longitude, it.latitude)
-                    }
-
-                    val polygonState = remember(index) { PolygonAnnotationState() }
-                    polygonState.fillColor = Color(0xFFFFA500) // Color naranja
-                    polygonState.fillOutlineColor = Color(0xFF000000) // Color negro
-                    polygonState.fillOpacity = 0.3 // Opacidad del relleno
-
-                    PolygonAnnotation(
-                        points = listOf(mappedPolygonPoints),
-                        polygonAnnotationState = polygonState
-                    )
-                }
-
-                points.forEach { p ->
-                    val geo = Point.fromLngLat(p.latLng.longitude, p.latLng.latitude)
-                    key(p.id) { // Use key composable function to help Compose track annotations
-                        PointAnnotation(point = geo) {
-                            iconImage = markerIcon
-                            iconSize = 0.8
-                            interactionsState.onClicked {
-                                Log.d("MapScreen", "Punto clicado: ${p.title} (Lat: ${p.latLng.latitude}, Lng: ${p.latLng.longitude})")
-                                val matchingVisit = visits.find { it.idSearch == p.title }
-                                selectedVisit = matchingVisit
-                                true
-                            }
-                        }
-                    }
-                }
-            }
 
             /* ----- Barra de búsqueda flotante ----- */
             Surface(
@@ -500,22 +377,6 @@ fun MapScreen(
                     imageVector = Plus,
                     contentDescription = if (isAddingPoint) "Cancelar" else "Agregar",
                     tint = Color.White
-                )
-            }
-
-            /* ---------- Refresh FAB ---------- */
-            FloatingActionButton(
-                onClick = { viewModel.refreshMapData() },
-                containerColor = Color(0xFF4CAF50),
-                shape = CircleShape,
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(start = 24.dp, end = 24.dp, bottom = 100.dp) // Position above the add button
-            ) {
-                Text(
-                    text = "🔄",
-                    style = MaterialTheme.typography.titleLarge,
-                    color = Color.White
                 )
             }
 

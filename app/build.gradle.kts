@@ -51,6 +51,11 @@ android {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
             excludes += "/META-INF/gradle/incremental.annotation.processors"
+            excludes += "META-INF/INDEX.LIST" // <-- ADD THIS LINE
+            excludes += "META-INF/DEPENDENCIES" // Often good to add this one too if you get similar errors
+            excludes += "META-INF/NOTICE"      // And these
+            excludes += "META-INF/LICENSE"     // And these
+            excludes += "META-INF/*.txt" // Sometimes helps with other text files
         }
     }
 }
@@ -81,12 +86,16 @@ dependencies {
     implementation("com.squareup.retrofit2:converter-gson:2.11.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
     implementation("com.google.accompanist:accompanist-permissions:0.34.0")
-    implementation("com.mapbox.maps:android:11.12.2")
-    implementation("com.mapbox.maps:android-core:11.12.2")
-    implementation("com.mapbox.extension:maps-compose:11.12.2")
-    // implementation("com.mapbox.maps:extension-compose-annotation:11.12.2")
+    
+    //Maplibre
+    implementation("org.maplibre.gl:android-sdk:9.6.0")
+
+    //Android server
+    implementation("com.github.fengzhizi715.AndroidServer:core:v1.3.3")
+    implementation("androidx.test:monitor:1.7.2")
+    implementation("androidx.test.ext:junit-ktx:1.2.1")
+
     implementation("mil.nga.geopackage:geopackage-android:6.7.4")
-    // implementation("com.github.anboralabs:spatia-room:0.3.0")
     implementation(libs.dagger.hilt.android)
     implementation(libs.play.services.maps)
     ksp(libs.dagger.hilt.compiler)

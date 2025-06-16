@@ -25,8 +25,9 @@ import com.coplanin.terrainfo.ui.icons.User
 import androidx.compose.material3.OutlinedTextField
 
 
-private const val MBTILES_RASTER = "planet2.mbtiles"
-private const val MBTILES_POINTS = "predio_terreno_new.mbtiles"
+private const val MBTILES_BASE_COLOMBIA = "planet2.mbtiles"
+private const val MBTILES_TERRENOS = "terrenos.mbtiles"
+private const val MBTILES_PREDIOS = "predios.mbtiles"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -319,9 +320,10 @@ fun MapScreen(
         ) {
             /* -------- MAPA OFFLINE (MapLibre) -------- */
             OfflineMapboxComposable(
-                modifier = Modifier.matchParentSize(),
-                mbTilesName     = MBTILES_RASTER,
-                pointsTilesName = MBTILES_POINTS
+                modifier        = Modifier.matchParentSize(),
+                mbTilesName     = MBTILES_BASE_COLOMBIA,
+                terrenosTiles   = MBTILES_TERRENOS,
+                prediosTiles    = MBTILES_PREDIOS
             )
 
             /* ----- Barra de búsqueda flotante ----- */
